@@ -1,3 +1,5 @@
+# GR - Evaluating Confidential Computing with Unikernels
+
 Taken from [dimstav23/GDPRuler/tree/main/AMD_SEV_SNP](https://github.com/dimstav23/GDPRuler/tree/main/AMD_SEV_SNP)
 
 ### 3. Prepare the host toolchain
@@ -36,9 +38,9 @@ sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./usr/local/bin/qemu-img convert kinetic-s
 
 sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH  ./usr/local/bin/qemu-img resize ./images/sev-server.img +20G 
 
-./prepare_net_cfg.sh -br virbr0 -cfg ./network-config-server.yml
+./prepare_net_cfg.sh -br virbr0 -cfg ./config/network-config-server.yml
 
-sudo cloud-localds -N ./config/network-config-server.yml ./images/server-cloud-config.iso ./configcloud-config-server
+sudo cloud-localds -N ./config/network-config-server.yml ./images/server-cloud-config.iso ./config/cloud-config-server
 
 mkdir OVMF_files
 

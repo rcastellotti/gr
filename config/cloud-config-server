@@ -1,7 +1,7 @@
 #cloud-config
 password: amd_sev
 chpasswd: { expire: False }
-ssh_pwauth: False
+ssh_pwauth: True
 ssh_authorized_keys:
   - ssh-rsa enter_your_rsa_key_here
   - ssh-ed25519 you_can_add_multiple_keys_with_different_algorithms
