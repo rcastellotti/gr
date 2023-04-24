@@ -3,9 +3,9 @@ Taken from [dimstav23/GDPRuler/tree/main/AMD_SEV_SNP](https://github.com/dimstav
 ### 3. Prepare the host toolchain
 Compile the custom OVMF and QEMU provided by AMD:
 
-```
-$ ./build.sh qemu
-$ ./build.sh ovmf
+```bash
+./build.sh qemu
+./build.sh ovmf
 ```
 
 **Note:** 
@@ -26,24 +26,25 @@ For SVSM, this setup has been tested with
 - The [`prepare_net_cfg.sh`](./prepare_net_cfg.sh) script takes as a parameter the virtual bridge where the VMs will be connected to and modifies the IP prefix in the network configuration (given as a secord parameter) appropriately.
 
 Follow the next set of commands to launch an SEV-SNP guest (tested with ubuntu 22.04 cloud img).
-```
-$ wget https://cloud-images.ubuntu.com/kinetic/current/kinetic-server-cloudimg-amd64.img 
 
-$ mkdir images
+```bash
+wget https://cloud-images.ubuntu.com/kinetic/current/kinetic-server-cloudimg-amd64.img 
 
-$ sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./usr/local/bin/qemu-img convert kinetic-server-cloudimg-amd64.img ./images/sev-server.img
+mkdir images
 
-$ sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH  ./usr/local/bin/qemu-img resize ./images/sev-server.img +20G 
+sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./usr/local/bin/qemu-img convert kinetic-server-cloudimg-amd64.img ./images/sev-server.img
 
-$ ./prepare_net_cfg.sh -br virbr0 -cfg ./network-config-server.yml
+sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH  ./usr/local/bin/qemu-img resize ./images/sev-server.img +20G 
 
-$ sudo cloud-localds -N ./config/network-config-server.yml ./images/server-cloud-config.iso ./configcloud-config-server
+./prepare_net_cfg.sh -br virbr0 -cfg ./network-config-server.yml
 
-$ mkdir OVMF_files
+sudo cloud-localds -N ./config/network-config-server.yml ./images/server-cloud-config.iso ./configcloud-config-server
 
-$ cp ./usr/local/share/qemu/OVMF_CODE.fd ./OVMF_files/OVMF_CODE_server.fd
+mkdir OVMF_files
 
-$ cp ./usr/local/share/qemu/OVMF_VARS.fd ./OVMF_files/OVMF_VARS_server.fd
+cp ./usr/local/share/qemu/OVMF_CODE.fd ./OVMF_files/OVMF_CODE_server.fd
+
+cp ./usr/local/share/qemu/OVMF_VARS.fd ./OVMF_files/OVMF_VARS_server.fd
 ```
 
 **Important note:** 
@@ -51,8 +52,8 @@ $ cp ./usr/local/share/qemu/OVMF_VARS.fd ./OVMF_files/OVMF_VARS_server.fd
 - To avoid any problems, you have to use a distro with text-based installer, otherwise your launched VM might stuck ([issue](https://github.com/AMDESE/AMDSEV/issues/38)).
 
 ### 5. Launch an AMD SEV-SNP guest.
-```
-$ sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./launch-qemu.sh \
+```bash
+sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./launch-qemu.sh \
 -hda ./images/sev-server.img \
 -cdrom ./images/server-cloud-config.iso \
 -sev-snp \
