@@ -56,12 +56,12 @@ cp ./usr/local/share/qemu/OVMF_VARS.fd ./OVMF_files/OVMF_VARS_server.fd
 ### 5. Launch an AMD SEV-SNP guest.
 ```bash
 sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./launch-qemu.sh \
--hda ./images/sev-server.img \
--cdrom ./images/server-cloud-config.iso \
--sev-snp \
--bridge virbr0 \
--bios ./OVMF_files/OVMF_CODE_server.fd \
--bios-vars ./OVMF_files/OVMF_VARS_server.fd
+  -hda ./images/sev-server.img \
+  -cdrom ./images/server-cloud-config.iso \
+  -sev-snp \
+  -bridge virbr0 \
+  -bios ./OVMF_files/OVMF_CODE_server.fd \
+  -bios-vars ./OVMF_files/OVMF_VARS_server.fd
 ```
 
 **Important notes:**
