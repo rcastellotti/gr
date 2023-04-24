@@ -1,10 +1,5 @@
 with import <nixpkgs> { };
 let
-  pythonEnv = python3.withPackages (ps: [
-      ps.pandas
-      ps.pexpect
-      ps.matplotlib
-    ]);
   libraries = [ pixman zlib zstd glib libpng ];
 in
 mkShell {
@@ -45,29 +40,7 @@ mkShell {
     file
     bridge-utils
     cloud-utils
-
-    #redis specific packages
-    tcl
-    tcltls
-    openssl
-    jemalloc
-    hiredis
-    redis-plus-plus
-
-    #rockdb specific packages
-    rocksdb
-    clang-tools
-    lz4
-    bzip2
-    snappy
-    gflags
-    boost
-
-    #GDPRBench specific packages
-    maven
-    jdk11
-    python2
-
+    
     #for the controller
     cmake
     git
