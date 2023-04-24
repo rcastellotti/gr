@@ -53,6 +53,8 @@ cp ./usr/local/share/qemu/OVMF_VARS.fd ./OVMF_files/OVMF_VARS_server.fd
 - Each VM requires a separate `.img` and `OVMF_*.fd` files.
 - To avoid any problems, you have to use a distro with text-based installer, otherwise your launched VM might stuck ([issue](https://github.com/AMDESE/AMDSEV/issues/38)).
 
+Connect to qemu monitor using `socat -,echo=0,icanon=0 unix-connect:monitor` (socket created by `launch_qemu.sh`)
+
 ### 5. Launch an AMD SEV-SNP guest.
 ```bash
 sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./launch-qemu.sh \
