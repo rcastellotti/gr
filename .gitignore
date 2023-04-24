@@ -1,0 +1,9 @@
+qemu/
+ovmf/
+images/
+usr/
+monitor
+OVMF_files/
+stdout.log
+kinetic-server-cloudimg-amd64.img
+sev-server.fd
