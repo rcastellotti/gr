@@ -10,7 +10,6 @@ in
 mkShell {
   buildInputs = libraries;
   nativeBuildInputs = [
-
     #for the kernel module build
     cpuid
     dmidecode
@@ -18,6 +17,10 @@ mkShell {
     msr-tools
     linuxPackages_latest.kernel.dev
     unzip
+
+    #for the sev-tool
+    autoconf
+    automake
 
     #for sev guest
     ninja
@@ -79,8 +82,6 @@ mkShell {
   LD_LIBRARY_PATH = lib.makeLibraryPath libraries;
   shellHook = ''
     export KDIR=${linuxPackages_latest.kernel.dev}/lib/modules/${linuxPackages_latest.kernel.dev.modDirVersion}/build
-    ./build.sh qemu
-    ./build.sh ovmf
-
+    export PATH=${pythonEnv}/bin:$PATH
   ''; 
 }
