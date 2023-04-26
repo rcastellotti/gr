@@ -18,7 +18,15 @@ Compile the custom OVMF and QEMU provided by AMD:
 Follow the next set of commands to launch an SEV-SNP guest.
 
 ```bash
-
+wget https://cloud-images.ubuntu.com/kinetic/current/kinetic-server-cloudimg-amd64.img 
+mkdir images
+sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./usr/local/bin/qemu-img convert kinetic-server-cloudimg-amd64.img ./images/sev-server.img
+sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH  ./usr/local/bin/qemu-img resize ./images/sev-server.img +20G 
+./prepare_net_cfg.sh -br virbr0 -cfg ./config/network-config-server.yml
+sudo cloud-localds -N ./config/network-config-server.yml ./images/server-cloud-config.iso ./config/cloud-config-server
+mkdir OVMF_files
+cp ./usr/local/share/qemu/OVMF_CODE.fd ./OVMF_files/OVMF_CODE_server.fd
+cp ./usr/local/share/qemu/OVMF_VARS.fd ./OVMF_files/OVMF_VARS_server.fd
 ```
 
 Connect to qemu monitor using `socat -,echo=0,icanon=0 unix-connect:monitor` (socket created by `launch_qemu.sh`)
