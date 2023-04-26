@@ -1,5 +1,4 @@
 #cloud-config
-password: amd_sev
 chpasswd: { expire: False }
 ssh_pwauth: True
 ssh_authorized_keys:
