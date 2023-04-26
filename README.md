@@ -18,15 +18,7 @@ Compile the custom OVMF and QEMU provided by AMD:
 Follow the next set of commands to launch an SEV-SNP guest.
 
 ```bash
-wget https://cloud-images.ubuntu.com/kinetic/current/kinetic-server-cloudimg-amd64.img 
-mkdir images
-sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./usr/local/bin/qemu-img convert kinetic-server-cloudimg-amd64.img ./images/sev-server.img
-sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH  ./usr/local/bin/qemu-img resize ./images/sev-server.img +20G 
-./prepare_net_cfg.sh -br virbr0 -cfg ./config/network-config-server.yml
-sudo cloud-localds -N ./config/network-config-server.yml ./images/server-cloud-config.iso ./config/cloud-config-server
-mkdir OVMF_files
-cp ./usr/local/share/qemu/OVMF_CODE.fd ./OVMF_files/OVMF_CODE_server.fd
-cp ./usr/local/share/qemu/OVMF_VARS.fd ./OVMF_files/OVMF_VARS_server.fd
+
 ```
 
 Connect to qemu monitor using `socat -,echo=0,icanon=0 unix-connect:monitor` (socket created by `launch_qemu.sh`)
@@ -50,7 +42,7 @@ In step 5 above, we use the parameter `-bridge virbr0`, so that our VMs use the 
 Our script [`prepare_net_cfg.sh`](./prepare_net_cfg.sh) checks the given virtual bridge and adjust the prefix of the IP declared in the network configuration file. Example configuration files are given in the [cloud_configs](./cloud_configs/) folder. They are used mainly to pre-determine the IPs of the VMs in the network.
 
 ### Manual ssh connection setup
-- connect using ssh ubuntu@192.168.122.48
+- connect using ssh `ubuntu@192.168.122.48`
 
 ### Useful links
 - Sample cloud-config and network-config for cloud-init can be found [here](https://gist.github.com/itzg/2577205f2036f787a2bd876ae458e18e).
