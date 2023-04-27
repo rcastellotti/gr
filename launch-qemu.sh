@@ -24,14 +24,14 @@ BIOS_DEBUG=""
 VNC_PORT=""
 ALLOW_DEBUG=""
 USE_VIRTIO="1"
-BRIDGE=""
+StBRIDGE=""
 SEV_POLICY=""
 SNP_FLAGS="0"
 DISCARD=""
 
 QEMU_INSTALL_DIR="./usr/local/bin/"
 
-echo $LD_LIBRARY_PATH
+# echo $LD_LIBRARY_PATH
 
 usage() {
 	echo "$0 [options]"

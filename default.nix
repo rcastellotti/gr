@@ -45,37 +45,6 @@ mkShell {
     file
     bridge-utils
     cloud-utils
-
-    #redis specific packages
-    tcl
-    tcltls
-    openssl
-    jemalloc
-    hiredis
-    redis-plus-plus
-
-    #rockdb specific packages
-    rocksdb
-    clang-tools
-    lz4
-    bzip2
-    snappy
-    gflags
-    boost
-
-    #GDPRBench specific packages
-    maven
-    jdk11
-    python2
-
-    #for the controller
-    cmake
-    git
-    clang
-    cppcheck
-    doxygen
-    codespell
-    abseil-cpp
   ];
 
   # make install strips valueable libraries from our rpath

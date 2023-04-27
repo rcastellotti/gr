@@ -31,15 +31,9 @@ cp ./usr/local/share/qemu/OVMF_VARS.fd ./OVMF_files/OVMF_VARS_server.fd
 
 Connect to qemu monitor using `socat -,echo=0,icanon=0 unix-connect:monitor` (socket created by `launch_qemu.sh`)
 
-### 5. Launch an AMD SEV-SNP guest.
+### 5. Launch an AMD SEV-SNP guest. 
 ```bash
-sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./launch-qemu.sh \
-  -hda ./images/sev-server.img \
-  -cdrom ./images/server-cloud-config.iso \
-  -sev-snp \
-  -bridge virbr0 \
-  -bios ./OVMF_files/OVMF_CODE_server.fd \
-  -bios-vars ./OVMF_files/OVMF_VARS_server.fd
+sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./launch.sh
 ```
 
 ### 6. Inside the guest VM, verify that AMD SEV-SNP is enabled:
