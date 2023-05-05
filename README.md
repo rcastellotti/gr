@@ -28,7 +28,7 @@ sudo cloud-localds -N ./config/network-config-server-nosev.yml ./images/server-c
 ### Launch a NOSEV guest. 
 
 ```bash
- sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./launch-qemu-nosev.sh \
+sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./launch-qemu-nosev.sh \
     -hda ./images/no-sev-server.img \
     -cdrom ./images/server-cloud-config-nosev.iso \
     -bridge virbr0 
@@ -52,7 +52,7 @@ Connect to qemu monitor using `socat -,echo=0,icanon=0 unix-connect:monitor` (so
 
 ### 4. Launch an AMD SEV-SNP guest. 
 ```bash
- sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./launch-qemu-sev.sh \
+sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./launch-qemu-sev.sh \
     -hda ./images/sev-server.img \
     -cdrom ./images/server-cloud-config-sev.iso \
     -sev-snp \
