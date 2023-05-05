@@ -18,6 +18,8 @@ mkShell {
     linuxPackages_latest.kernel.dev
     unzip
 
+    # for phoronix-test-suite
+    php
     #for the sev-tool
     autoconf
     automake
