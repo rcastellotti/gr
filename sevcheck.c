@@ -10,7 +10,7 @@ int main()
     int eax, ebx, ecx, edx = 0;
     unsigned int leaf = 0x8000001f;
     __get_cpuid(leaf, &eax, &ebx, &ecx, &edx);
-    printf("id: %x :: eax %b :: ebx %x\n", leaf, eax, ebx);
+    printf("id: %x :: eax %x :: ebx %x\n", leaf, eax, ebx);
     if (eax && 0x00000001)
     {
         printf("AMD SEV is supported.\n");
