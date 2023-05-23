@@ -88,41 +88,31 @@ Evaluating Confidential Computing with Unikernels \\ (Guided Research Project)
 
 \begin{document}
 
-%don't want date printed
 \date{}
 
 % make title bold and 14 pt font (Latex default is non-bold, 16 pt)
 \title{\Large \bf \titlename}
 
-%for single author (just remove % characters)
 \author{
-{\rm Roberto Castellotti}\\
-TU Munich
+{\rm Roberto Castellotti}\\TU Munich
 \and
-{\rm Masanori Misono}\\
-TU Munich
-%Second Institution
-% copy the following lines to add more authors
-\and
-%Name Institution
-} % end author
+{\rm Masanori Misono}\\TU Munich
+}
 
 \maketitle
 
 \begin{abstract}
-We report a preliminary performance evaluation of Intel TDX (Trusted Domain Extension)~\cite{tdx} on a Linux system.
+We report a preliminary performance evaluation of AMD SEV (Secure Environment Virtualization) on a Linux system.
 \end{abstract}
 
 \section{Environment}
-
-We use Intel DevCloud with Sapphire Rapids CPUs as the host machine and tdx-tools-2023ww01.rdc as the software stack.
+We run our experiments on ryan, we using a patched version of QEMU from AMD.
+Do we need additional info about the system?
+Specify what is enabled (SEV-SNP and other stuff)
+Specify the CPU
 \autoref{tab:experiment-environment} shows the detailed environment.
 We use QEMU/KVM as a hypervisor.
-We assign the guest the same amount of CPUs and about 90\% of the host memory.
-We do not pin vCPU threads.
-We disable vNUMA in the guest and boot a TDX VM with Direct Boot.
-The guest uses kvmclock when TDX is disabled.
-TDX VM does not use kvmclock as the guest cannot trust the host, but the TDX module provides reliable TSC~\cite{tdx_secure_spec}.
+We assign the guest the same amount of CPUs (16) and 16G of memory.
 
 \begin{table*}[t]
 \centering
@@ -130,19 +120,18 @@ TDX VM does not use kvmclock as the guest cannot trust the host, but the TDX mod
 \label{tab:experiment-environment}
 \begin{tabular}{l|l}
 \toprule
-    Host CPU      & Intel(R) Xeon(R) Platinum 8480CTDX at 2.0GHz, 56 cores $\times$ 2 (Hyperthreading disabled) \\
-    Host Memory   & Samsung DDR5 4800 MT/s 64 GB $\times$ 16 (1024GB) \\
+    Host CPU      & AMD EPYC 7713P 64-Cores  \\
+    Host Memory   & HMAA8GR7AJR4N-XN (Hynix) 3200MHz 64 GB $\times$ 8 (512GB) \\
     Host Config   & Automatic numa balancing disabled; Side channel mitigation default (enabled) \\
-    Host Kernel   & 5.19.0-tdx.v2.4.mvp17.el8 (Ubuntu 22.04) \\
-    Host TSC Frequency & 2000MHz \\
-    QEMU          & 7.0-v1.3 (patched) \\
+    Host Kernel   & 6.1.0-rc4 \#1-NixOS SMP PREEMPT\_DYNAMIC (NixOS 22.11) \\
+    QEMU          & 7.2.0 (patched) \\
 \midrule
-    OVMF          & Stable 202211 (patched) \\
-    Guest vCPU    & 112 \\
-    Guest Memory  & 896GB  \\
-    Guest Kernel  & 5.19.0-mvp15v2+4-generic (Ubuntu 22.04) \\
+    OVMF          & Stable 202211 (patched) ????  \\
+    Guest vCPU    & 16 \\
+    Guest Memory  & 16GB  \\
+    Guest Kernel  & 5.19.0-41-generic \#42-Ubuntu SMP PREEMPT\_DYNAMIC (Ubuntu 22.10
+    ) \\
     Guest Config  & No vNUMA; Side channel mitigation default (enabled) \\
-    TDX TSC Frequency & 1000MHz \\
 \bottomrule
 \end{tabular}
 \end{table*}
@@ -158,23 +147,15 @@ lorem ipsum
 \label{tab:cpuid}
 \begin{tabular}{lll}
 \toprule
-leaf &  description & \#VE in TDX \\
+leaf &  description &  \\
 \midrule
-0x0  & vendor info & \\
-0x2  & cache info  & \checkmark \\
-0x15 & TSC info (trusted)   & \\
-0x16 & TSC info    & \checkmark \\
+0x0  & vendor info  \\
+0x2  & cache info   \\
+0x15 & TSC info (trusted)    \\
+0x16 & TSC info     \\
 \bottomrule
 \end{tabular}
 \end{table}
-
-\begin{figure*}[t]
-\centering
-\includegraphics[width=1.0\textwidth]{./experiment/cpuid/cpuid_time.pdf}
-% \includegraphics[width=1.0\textwidth]{./experiment/cpuid/cpuid_time_box.pdf}
-\caption{CPUID latency distribution}
-\label{fig:cpuid-latency}
-\end{figure*}
 
 \begin{table}
 \centering
@@ -196,66 +177,6 @@ vm:tdx:bypass   & 1.49 & 1.62 & 1.63 & 29.64 \\
 \end{tabular}
 \end{table}
 
-\begin{table}
-\centering
-\caption{cpuid latency leaf: 0x2 (time: us)}
-\label{tab:cpuid_0x2}
-\begin{tabular}{lrrrr}
-\toprule
-{} &  50\% &  95\% &  99\% &   max \\
-\midrule
-bare            & 0.43 & 0.43 & 0.44 &  5.04 \\
-bare:tme        & 0.42 & 0.43 & 0.44 &  5.89 \\
-bare:tme:bypass & 0.42 & 0.43 & 0.43 &  5.79 \\
-vm:bare         & 0.62 & 0.62 & 0.63 &  7.28 \\
-vm:notdx        & 0.62 & 0.63 & 0.63 &  7.25 \\
-vm:notdx:bypass & 0.62 & 0.62 & 0.64 &  8.28 \\
-vm:tdx          & 3.59 & 3.61 & 3.62 & 74.86 \\
-vm:tdx:bypass   & 3.65 & 4.75 & 4.79 & 30.05 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\begin{table}
-\centering
-\caption{cpuid latency leaf: 0x15 (time: us)}
-\label{tab:cpuid_0x15}
-\begin{tabular}{lrrrr}
-\toprule
-{} &  50\% &  95\% &  99\% &   max \\
-\midrule
-bare            & 0.99 & 1.02 & 1.02 & 33.42 \\
-bare:tme        & 0.99 & 1.02 & 1.02 &  6.51 \\
-bare:tme:bypass & 0.98 & 1.00 & 1.01 &  9.90 \\
-vm:bare         & 0.64 & 0.64 & 0.65 & 19.86 \\
-vm:notdx        & 0.63 & 0.64 & 0.64 &  8.40 \\
-vm:notdx:bypass & 0.64 & 0.65 & 0.65 &  7.55 \\
-vm:tdx          & 1.47 & 1.60 & 1.61 & 48.42 \\
-vm:tdx:bypass   & 1.49 & 1.51 & 1.52 & 43.69 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\begin{table}
-\centering
-\caption{cpuid latency leaf: 0x16 (time: us)}
-\label{tab:cpuid_0x16}
-\begin{tabular}{lrrrr}
-\toprule
-{} &  50\% &  95\% &  99\% &   max \\
-\midrule
-bare            & 0.95 & 0.97 & 0.97 &  8.75 \\
-bare:tme        & 0.97 & 0.99 & 0.99 &  6.46 \\
-bare:tme:bypass & 0.96 & 0.98 & 0.98 &  6.50 \\
-vm:bare         & 0.63 & 0.64 & 0.65 &  6.20 \\
-vm:notdx        & 0.64 & 0.65 & 0.66 & 13.29 \\
-vm:notdx:bypass & 0.64 & 0.64 & 0.65 &  4.51 \\
-vm:tdx          & 3.58 & 3.61 & 3.62 & 62.92 \\
-vm:tdx:bypass   & 3.65 & 3.67 & 3.68 & 47.16 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
 \subsection{Memory overhead}
 We measure the memory overhead of TDX using the following benchmarks using phoronix-test-suite~\cite{phoronix}.
 Here, we report normalized overhead compared to the baremetal (``bare'').
@@ -264,30 +185,8 @@ Here, we report normalized overhead compared to the baremetal (``bare'').
 \item[RAMSpeed~\cite{ramspeed}] This measures the memory latency with several operations. \autoref{fig:ramspeed} shows the results.
 \item[Tinymembench~\cite{tinymembench}] This benchmark measures the memory latency of the system. \autoref{fig:membench} shows the results.
 \item[MBW~\cite{mbw}] This measures the memory bandwidth of the system. \autoref{fig:membench} shows the results.
-% \item[Stream~\cite{stream}] This benchmark measures the memory bandwidth of the system. \autoref{fig:stream} shows the results.
 \end{description}
 
-\begin{figure*}[t]
-\centering
-\includegraphics[width=1.0\textwidth]{./experiment/phoronix/all_ramspeed.pdf}
-\caption{RAMSpeed benchmarks (baseline: ``bare'')}
-\label{fig:ramspeed}
-\end{figure*}
-
-\begin{figure*}[t]
-\centering
-\includegraphics[width=1.0\textwidth]{./experiment/phoronix/all_memory.pdf}
-\caption{Tinymembench and MBW benchmarks (baseline: ``bare'')}
-\label{fig:membench}
-\end{figure*}
-
-% TODO: we should check if vector instruction is available in VMs
-% \begin{figure*}[t]
-% \centering
-% \includegraphics[width=1.0\textwidth]{./experiment/phoronix/all_stream.pdf}
-% \caption{Stream benchmark (baseline: ``bare'')}
-% \label{fig:stream}
-% \end{figure*}
 
 We observe the followings from the results.
 \begin{itemize}
@@ -303,6 +202,7 @@ We observe the followings from the results.
 We measure several application benchmarks using Phoronix Benchmark Suite~\cite{phoronix}.
 We especially run compilation and NPB (NAS Parallel Benchmarks) benchmarks as CPU-intensive applications and lz4 and SQLite benchmarks as memory-intensive applications.
 Here, we report normalized overhead compared to the normal virtual machine (``bare:vm'').
+
 \note{TDX VM (``vm:tdx'') may have additional overhead due to the vCPU over-commitment.}
 
 \begin{description}
@@ -312,33 +212,7 @@ Here, we report normalized overhead compared to the normal virtual machine (``ba
 \item[SQLite~\cite{sqlite_bench}] This measures the time to perform a pre-defined number of insertions to a SQLite database. \autoref{fig:membench} shows the results.
 \end{description}
 
-\begin{figure*}[t]
-\centering
-\includegraphics[width=1.0\textwidth]{./experiment/phoronix/vm_compilation.pdf}
-\caption{Compilation time (baseline: ``vm:bare'')}
-\label{fig:compilation}
-\end{figure*}
 
-\begin{figure*}[t]
-\centering
-\includegraphics[width=1.0\textwidth]{./experiment/phoronix/vm_nas.pdf}
-\caption{NAS Benchmarks (baseline: ``vm:bare'')}
-\label{fig:npb}
-\end{figure*}
-
-\begin{figure*}[t]
-\centering
-\includegraphics[width=1.0\textwidth]{./experiment/phoronix/vm_lz4.pdf}
-\caption{LZ4  (baseline: ``vm:bare'')}
-\label{fig:lz4}∏
-\end{figure*}
-
-\begin{figure*}[t]
-\centering
-\includegraphics[width=1.0\textwidth]{./experiment/phoronix/vm_sqlite.pdf}
-\caption{SQLite  (baseline: ``vm:bare'')}
-\label{fig:sqlite}
-\end{figure*}
 
 We observe the followings from the results.
 \begin{itemize}
@@ -354,7 +228,7 @@ Further experiments will include but not be limited to the following.
 \begin{itemize}
     \item More detailed breakdown of the overhead in TDX VM, including \#VE and TDX call handling.
     \item Performance evaluation on other hypervisors such as Cloud Hypervisor.
-    \item Effect of vNUMA. vNUMA is known to have a significant impact on the performance of VM~\cite{sev_eval}.
+    \item Effect of vNUMA. vNUMA is known to have a significant impact on the performance of VM.
     \item Memory management time in VMs.
     \item Performance effect of having multiple TDX and Non-TDX VMs.
     \item Boot time. TDX requires a special memory configuration, which affects the boot time.
@@ -363,54 +237,25 @@ Further experiments will include but not be limited to the following.
     \item Migration time.
 \end{itemize}
 
-
-%-------------------------------------------------------------------------------
-% \bibliographystyle{plain}
 \printbibliography
 
 \appendix
 \section*{Appendix}
-\section{Errata and remarks on the documentation~\cite{linux-stacks-for-intel-tdx-2023ww01}}
 \myparagraph{Section 3.2 ``BIOS Configurations''}
 \begin{itemize}
-    \item In our machine, we need to enable ``Socket Configuration => Processor Configuration => Extended APIC''. Otherwise, we could not enable TDX and SGX.
-    \item In our machine, ``Disable excluding Mem below 1MB'' configuration is in ``Processor Configuration => TME, TME-MT, TDX => Disable excluding Mem below 1MB'', not "Processor Configuration => Disable excluding Mem below 1MB''.
-    \item Also, the documentation says, ``Disable excluding Mem below 1MB in CMR'' should be ``Enable/Disable''. It is unclear whether we should enable it or not.
+    \item lorem
 \end{itemize}
-
-\myparagraph{Section 3.3.3 ``Ubuntu 22.04''}
-\begin{itemize}
-    \item `python-dev` is also a prerequisite. Otherwise, building mvp-tdx-kernel-v5.19 fails because of a lack of `python-config`.
-\end{itemize}
-
-\myparagraph{Section 3.5.1.2 ``Ubuntu 22.04''}
-\begin{itemize}
-    \item `libguestfs-tools` is also a prerequisite.
-    \item We need to run `sudo chmod +r /boot/vmlinuz-*` before  running ./tdx-guest-stack.sh because in the shell script libguestfs tries to access /boot/vmlinuz, but that is not readable by default in Ubuntu (\url{https://bugs.launchpad.net/fuel/+bug/1467579})
-\end{itemize}
-
-\myparagraph{Section 5.4 ``Measurement \& EventLog Tools''}
-\begin{itemize}
-    \item The scripts are in the directory `tdx-tools-2023ww01.rdc/attestation/pytdxmeasure'.
-\end{itemize}
-
-\section{Troubleshooting}
-Section 7.1 in the documentation~\cite{linux-stacks-for-intel-tdx-2023ww01} describes how to troubleshoot TDX.
-Here, we describe some problems we encountered and how to solve them.
-
-\myparagraph{Problem: TDX is not enabled (MSR reports TDX disabled) even if it is enabled in BIOS}
-As the documentation says, ``at least 1 DIMM per CPU socket and ensure DIMM are plugged in corresponding slots.''
-Inserting DIMMs properly solved the problem.
 
 \myparagraph{Check MSR values}
 We can check related MSR values with the following script.
-TODO: insert it
-\lstinputlisting[language=c]{./scripts/check_msr.sh}
+\lstinputlisting[language=c]{../sevcheck.c}
 
 \end{document}
 
-
+% this was in sevcheck.c
 % // this very basic program checks whether AMD SEV features are enabled
 % // we are extracting data from register 0x8000001f[EAX], as specified in 
 % // paragraphs 7.10.1,15.34.1,15.35.1,15.36.1 of AMD64 Architecture Programmer’s Manual
 % // amd.com/system/files/TechDocs/40332.pdf
+
+% todo: specify what we need to check to detect what is enabled (cite the amd manual)
