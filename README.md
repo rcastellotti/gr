@@ -1,8 +1,8 @@
 # GR - Evaluating Confidential Computing with Unikernels
 
-Taken from [dimstav23/GDPRuler/tree/main/AMD_SEV_SNP](https://github.com/dimstav23/GDPRuler/tree/main/AMD_SEV_SNP)
+Taken from [dimstav23/GDPRuler/tree/main/AMD_SEV_SNP](https://github.com/dimstav23/GDPRuler/tree/main/AMD_SEV_SNP)  
 
-### 1. Prepare the host toolchain
+## Prepare the host toolchain
 Compile the custom OVMF and QEMU provided by AMD:
 
 ```bash
@@ -10,14 +10,14 @@ Compile the custom OVMF and QEMU provided by AMD:
 ./build.sh ovmf
 ```
 
-### Misc
+## Misc
 
 - You need to have cloud-config file and a network-config file for your VM, similar to those in the [config](.config/) folder.
 - If you wish to have ssh connection to your VMs, you can adapt the cloud-config files and include your ssh keys, so that cloud-init sets them up automatically in the VM. Example cloud-init configurations that include the placeholders for ssh keys can be found in `.config/`
 - The [`prepare_net_cfg.sh`](./prepare_net_cfg.sh) script takes as a parameter the virtual bridge where the VMs will be connected to and modifies the IP prefix in the network configuration (given as a secord parameter) appropriately.
 - Download an ubuntu image: `wget https://cloud-images.ubuntu.com/kinetic/current/kinetic-server-cloudimg-amd64.img`
 
-### Prepare a NOSEV guest
+## Prepare a NOSEV guest
 
 ```bash
 sudo qemu-img convert kinetic-server-cloudimg-amd64.img ./images/no-sev-server.img
@@ -25,13 +25,13 @@ sudo qemu-img resize ./images/no-sev-server.img +20G
 ./prepare_net_cfg.sh -br virbr0 -cfg ./config/network-config-server-nosev.yml
 sudo cloud-localds -N ./config/network-config-server-nosev.yml ./images/server-cloud-config-nosev.iso ./config/cloud-config-server-nosev.yml
 ```
-### Launch a NOSEV guest. 
+## Launch a NOSEV guest. 
 
 ```bash
 sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./launch-nosev.sh
 ```
 
-### 3. Prepare an AMD SEV-SNP guest.
+## Prepare an AMD SEV-SNP guest.
 
 ```bash
 mkdir images
@@ -44,22 +44,22 @@ cp ./usr/local/share/qemu/OVMF_CODE.fd ./OVMF_files/OVMF_CODE_server.fd
 cp ./usr/local/share/qemu/OVMF_VARS.fd ./OVMF_files/OVMF_VARS_server.fd
 ```
 
-Connect to qemu monitor using `socat -,echo=0,icanon=0 unix-connect:monitor`
-
-### 4. Launch an AMD SEV-SNP guest. 
+## Launch an AMD SEV-SNP guest. 
 
 ```bash
 sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./launch-sev.sh
 ```
 
-### 5. Inside the guest VM, verify that AMD SEV-SNP is enabled:
+## Inside the guest VM, verify that AMD SEV-SNP is enabled:
 `sudo dmesg | grep snp -i ` should indicate `Memory Encryption Features active: AMD SEV SEV-ES SEV-SNP`
 
-### 6. Networking: 
-In step 5 above, we use the parameter `-bridge virbr0`, so that our VMs use the virtual network bridge `virbr0`. 
+### Networking: 
+
+Our VMs use the virtual network bridge `virbr0`. 
 Our script [`prepare_net_cfg.sh`](./prepare_net_cfg.sh) checks the given virtual bridge and adjust the prefix of the IP declared in the network configuration file. Example configuration files are given in the [cloud_configs](./cloud_configs/) folder. They are used mainly to pre-determine the IPs of the VMs in the network.
 
-### Manual ssh connection setup
+## Interact with the machines
+- connect to qemu monitor: `socat -,echo=0,icanon=0 unix-connect:monitor`
 - SEV machine: connect using ssh `ubuntu@192.168.122.48`
 - NOSEV machine: connect using ssh `ubuntu@192.168.122.49`
 
