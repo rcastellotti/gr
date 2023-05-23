@@ -41,70 +41,44 @@ this file is meant to be a log (scratchpad) to note things down.
 
 + export results
     + `phoronix-test-suite result-file-to-csv RESULT_ID`
-    
+
 + copy them to ryan: `scp -r ubuntu@192.168.122.48:/home/ubuntu/*.csv .`
 
 # misc
 + `result-file-to-suite` -> allows to create our custom testing suite
 
+# 14-05 -> 22-05
+
++ `wget http://parsec.cs.princeton.edu/download/3.0/parsec-3.0.tar.gz`
++ configured correctly the config file mentioned in readme 
++ compiling with the command `parsecmgmt -a build` does not work, see PARSEC_LOG.md (ps cannot kill processes because they are in uninterruptible wait)
+
+x264 benchmark does not work? 
+
++ [roberto@ryan:/scratch/roberto/parsec/parsec-3.0]$ bin/parsecmgmt -a run -p x264
+[PARSEC] Benchmarks to run:  parsec.x264
+
+[PARSEC] [========== Running benchmark parsec.x264 [1] ==========]
+[PARSEC] Setting up run directory.
+[PARSEC] Unpacking benchmark input 'test'.
+eledream_32x18_1.y4m
+[PARSEC] Running 'time /scratch/roberto/parsec/parsec-3.0/pkgs/apps/x264/inst/amd64-linux.gcc/bin/x264 --quiet --qp 20 --partitions b8x8,i4x4 --ref 5 --direct auto --b-pyramid --weightb --mixed-refs --no-fast-pskip --me umh --subme 7 --analyse b8x8,i4x4 --threads 1 -o eledream.264 eledream_32x18_1.y4m':
+[PARSEC] [---------- Beginning of output ----------]
+PARSEC Benchmark Suite Version 3.0-beta-20150206
+yuv4mpeg: 32x18@25/1fps, 0:0
+double free or corruption (!prev)
+bin/parsecmgmt: line 1222: 1048714 Aborted                 (core dumped) /scratch/roberto/parsec/parsec-3.0/pkgs/apps/x264/inst/amd64-linux.gcc/bin/x264 --quiet --qp 20 --partitions b8x8,i4x4 --ref 5 --direct auto --b-pyramid --weightb --mixed-refs --no-fast-pskip --me umh --subme 7 --analyse b8x8,i4x4 --threads 1 -o eledream.264 eledream_32x18_1.y4m
+
+real	0m0.081s
+user	0m0.000s
+sys	0m0.004s
+[PARSEC] [----------    End of output    ----------]
+[PARSEC]
+[PARSEC] BIBLIOGRAPHY
+[PARSEC]
+[PARSEC] [1] Bienia. Benchmarking Modern Multiprocessors. Ph.D. Thesis, 2011.
+[PARSEC]
+[PARSEC] Done.
 
 
-ubuntu@nosev:~$ cat 14-05-nosev-compilation.csv 
-14-05-nosev-compilation
-KVM testing on Ubuntu 22.10 via the Phoronix Test Suite.
-
- ,,"14-05-nosev-compilation"
-Processor,,AMD EPYC-v4 (16 Cores)
-Motherboard,,QEMU Standard PC (Q35 + ICH9 2009)
-Chipset,,Intel 82G33/G31/P35/P31 + ICH9
-Memory,,16GB
-Disk,,25GB QEMU HDD
-Graphics,,EFI VGA
-Network,,Red Hat Virtio device
-OS,,Ubuntu 22.10
-Kernel,,5.19.0-41-generic (x86_64)
-Vulkan,,1.3.224
-Compiler,,GCC 12.2.0
-File-System,,ext4
-Screen Resolution,,1280x800
-System Layer,,KVM
-
- ,,"14-05-nosev-compilation"
-"Timed Apache Compilation - Time To Compile (sec)",LIB,26.449
-"Timed FFmpeg Compilation - Time To Compile (sec)",LIB,47.152
-"Timed GCC Compilation - Time To Compile (sec)",LIB,1031.908
-"Timed GDB GNU Debugger Compilation - Time To Compile (sec)",LIB,67.078
-"Timed Gem5 Compilation - Time To Compile (sec)",LIB,427.151
-"Timed Godot Game Engine Compilation - Time To Compile (sec)",LIB,396.772
-"Timed ImageMagick Compilation - Time To Compile (sec)",LIB,27.167
-"Timed Linux Kernel Compilation - Build: defconfig (sec)",LIB,107.189
-"Timed Linux Kernel Compilation - Build: allmodconfig (sec)",LIB,1277.463
-"Timed LLVM Compilation - Build System: Ninja (sec)",LIB,774.417
-
-
-
-ubuntu@nosev:~$ cat 14-05-nosev-redis-12-1.csv 
-14-05-nosev-redis-1,2-1
-KVM testing on Ubuntu 22.10 via the Phoronix Test Suite.
-
- ,,"14-05-nosev-redis-1,2-1"
-Processor,,AMD EPYC-v4 (16 Cores)
-Motherboard,,QEMU Standard PC (Q35 + ICH9 2009)
-Chipset,,Intel 82G33/G31/P35/P31 + ICH9
-Memory,,16GB
-Disk,,25GB QEMU HDD
-Graphics,,EFI VGA
-Network,,Red Hat Virtio device
-OS,,Ubuntu 22.10
-Kernel,,5.19.0-41-generic (x86_64)
-Vulkan,,1.3.224
-Compiler,,GCC 12.2.0
-File-System,,ext4
-Screen Resolution,,1280x800
-System Layer,,KVM
-
- ,,"14-05-nosev-redis-1,2-1"
-"Redis - Test: GET - Parallel Connections: 50 (Reqs/sec)",HIB,2277704.58
-"Redis - Test: SET - Parallel Connections: 50 (Reqs/sec)",HIB,1570497.58
-
-ubuntu@nosev:~$ 
+# 22-05 starting to write some report
