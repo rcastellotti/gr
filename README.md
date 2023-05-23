@@ -44,7 +44,7 @@ cp ./usr/local/share/qemu/OVMF_CODE.fd ./OVMF_files/OVMF_CODE_server.fd
 cp ./usr/local/share/qemu/OVMF_VARS.fd ./OVMF_files/OVMF_VARS_server.fd
 ```
 
-Connect to qemu monitor using `socat -,echo=0,icanon=0 unix-connect:monitor` (socket created by `launch_qemu.sh`)
+Connect to qemu monitor using `socat -,echo=0,icanon=0 unix-connect:monitor`
 
 ### 4. Launch an AMD SEV-SNP guest. 
 
