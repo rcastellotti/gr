@@ -82,3 +82,6 @@ sys	0m0.004s
 
 
 # 22-05 starting to write some report
++ started writing the report
++ cleaned up the scripts to launch the machines (now simpler to understand and edit)
+

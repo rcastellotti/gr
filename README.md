@@ -28,10 +28,7 @@ sudo cloud-localds -N ./config/network-config-server-nosev.yml ./images/server-c
 ### Launch a NOSEV guest. 
 
 ```bash
-sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./launch-qemu-nosev.sh \
-    -hda ./images/no-sev-server.img \
-    -cdrom ./images/server-cloud-config-nosev.iso \
-    -bridge virbr0 
+sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./launch-nosev.sh
 ```
 
 ### 3. Prepare an AMD SEV-SNP guest.
@@ -50,14 +47,9 @@ cp ./usr/local/share/qemu/OVMF_VARS.fd ./OVMF_files/OVMF_VARS_server.fd
 Connect to qemu monitor using `socat -,echo=0,icanon=0 unix-connect:monitor` (socket created by `launch_qemu.sh`)
 
 ### 4. Launch an AMD SEV-SNP guest. 
+
 ```bash
-sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./launch-qemu-sev.sh \
-    -hda ./images/sev-server.img \
-    -cdrom ./images/server-cloud-config-sev.iso \
-    -sev-snp \
-    -bridge virbr0 \
-    -bios ./OVMF_files/OVMF_CODE_server.fd \
-    -bios-vars ./OVMF_files/OVMF_VARS_server.fd
+sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./launch-sev.sh
 ```
 
 ### 5. Inside the guest VM, verify that AMD SEV-SNP is enabled:
