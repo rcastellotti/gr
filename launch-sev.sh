@@ -1,5 +1,5 @@
 #!/bin/bash
-
+# https://github.com/AMDESE/linux-svsm/blob/main/scripts/launch-qemu.sh
 # -sev          enable SEV support"
 # -sev-es       enable SEV-ES support"
 # -sev-snp      enable SEV-SNP support"

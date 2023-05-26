@@ -28,7 +28,10 @@ sudo cloud-localds -N ./config/network-config-server-nosev.yml ./images/server-c
 ## Launch a NOSEV guest. 
 
 ```bash
-sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./launch-nosev.sh
+sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./launch-qemu-nosev.sh \
+    -hda ./images/no-sev-server.img \
+    -cdrom ./images/server-cloud-config-nosev.iso \
+    -bridge virbr0 
 ```
 
 ## Prepare an AMD SEV-SNP guest.
@@ -47,7 +50,13 @@ cp ./usr/local/share/qemu/OVMF_VARS.fd ./OVMF_files/OVMF_VARS_server.fd
 ## Launch an AMD SEV-SNP guest. 
 
 ```bash
-sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./launch-sev.sh
+sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./launch-qemu-sev.sh \
+    -hda ./images/sev-server.img \
+    -cdrom ./images/server-cloud-config-sev.iso \
+    -sev-snp \
+    -bridge virbr0 \
+    -bios ./OVMF_files/OVMF_CODE_server.fd \
+    -bios-vars ./OVMF_files/OVMF_VARS_server.fd
 ```
 
 ## Inside the guest VM, verify that AMD SEV-SNP is enabled:
@@ -70,3 +79,5 @@ Our script [`prepare_net_cfg.sh`](./prepare_net_cfg.sh) checks the given virtual
 - [QEMU](https://github.com/AMDESE/qemu) provided by AMD
 - [OVMF](https://github.com/AMDESE/ovmf) provided by AMD
 - [SVSM](https://github.com/AMDESE/linux-svsm) repository
+
+
