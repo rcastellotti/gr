@@ -108,8 +108,6 @@ We report a preliminary performance evaluation of AMD SEV (Secure Environment Vi
 
 We run our experiments on ryan, we using a patched version of QEMU from AMD.
 Do we need additional info about the system?
-Specify what is enabled (SEV-SNP and other stuff)
-Specify the CPU
 
 \autoref{tab:experiment-environment} shows the detailed environment.
 We use QEMU/KVM as a hypervisor.
@@ -144,9 +142,30 @@ We start by benchmarking the CPU by compling different programs (ffmpeg,gdb,linu
 
 \begin{description}
     \item[compilation~\cite{compilation}] This measures how much time it takes to compile common programs. \autoref{fig:compilation} shows the results.
-    \item[lz4~\cite{lz4}] This benchmark measures the memory latency of the system. \autoref{fig:membench} shows the results.
-    \end{description}
+    \item[lz4~\cite{lz4}] We measure compression and decompression speed (MB/s). \autoref{fig:lz4-compression} and \autoref{fig:lz4-decompression}  show the results.
+\end{description}
 
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=1.0\textwidth]{../compilation.png}
+    \caption{Compilation benchmark results}
+    \label{fig:compilation}
+\end{figure*}
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=0.5\textwidth]{../lz4-compression.png}
+    \caption{LZ4 compression benchmark results}
+    \label{fig:lz4-compression}
+\end{figure*}
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=0.5\textwidth]{../lz4-decompression.png}
+    \caption{LZ4 decompression benchmark results}
+    \label{fig:lz4-decompression}
+\end{figure*}
 
 
 
