@@ -1,0 +1,5 @@
+
+
+
+LLVM (sev),LLVM (nosev),Linux Kernel (sev),Linux Kernel(nosev),ImageMagick (sev),ImageMagick (nosev),Godot Game Engine (sev),Godot Game Engine (nosev),Gem5 (sev),Gem5 (nosev),GDB (sev),GDB (nosev),GCC (sev),GCC (nosev),FFMpeg (sev),FFMpeg(nosev),Apache (sev),Apache(nosev)
+788.86,774.41,106.73,107.18,27.54,27.16,401.84,396.77,435.22,427.15,68.67,67.07,1047.50,1031.90,47.59,47.15,36.64,26.44
