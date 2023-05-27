@@ -89,7 +89,6 @@ Evaluating Confidential Computing with Unikernels \\ (Guided Research Project)
 \begin{document}
 
 \date{}
-
 % make title bold and 14 pt font (Latex default is non-bold, 16 pt)
 \title{\Large \bf \titlename}
 
@@ -110,6 +109,7 @@ We run our experiments on ryan, we using a patched version of QEMU from AMD.
 Do we need additional info about the system?
 Specify what is enabled (SEV-SNP and other stuff)
 Specify the CPU
+
 \autoref{tab:experiment-environment} shows the detailed environment.
 We use QEMU/KVM as a hypervisor.
 We assign the guest the same amount of CPUs (16) and 16G of memory.
@@ -137,51 +137,23 @@ We assign the guest the same amount of CPUs (16) and 16G of memory.
 \end{table*}
 
 \section{Micro Benchmarks}
-\subsection{CPUID latency}
-lorem ipsum
+
+\subsection {CPU benchmarks}
+We start by benchmarking the CPU by compling different programs (ffmpeg,gdb,linux kernel, llvm (ninja)) and then we ran the lz4 benchmark.
+
+\begin{description}
+    \item[compilation~\cite{compilation}] This measures how much time it takes to compile common programs. \autoref{fig:compilation} shows the results.
+    \item[lz4~\cite{lz4}] This benchmark measures the memory latency of the system. \autoref{fig:membench} shows the results.
+    \end{description}
 
 
-\begin{table}
-\centering
-\caption{cpuid leaf information}
-\label{tab:cpuid}
-\begin{tabular}{lll}
-\toprule
-leaf &  description &  \\
-\midrule
-0x0  & vendor info  \\
-0x2  & cache info   \\
-0x15 & TSC info (trusted)    \\
-0x16 & TSC info     \\
-\bottomrule
-\end{tabular}
-\end{table}
 
-\begin{table}
-\centering
-\caption{cpuid latency leaf: 0x0 (time: us)}
-\label{tab:cpuid_0x0}
-\begin{tabular}{lrrrr}
-\toprule
-{} &  50\% &  95\% &  99\% &   max \\
-\midrule
-bare            & 0.05 & 0.05 & 0.05 &  0.09 \\
-bare:tme        & 0.04 & 0.05 & 0.05 &  0.09 \\
-bare:tme:bypass & 0.04 & 0.05 & 0.05 &  6.06 \\
-vm:bare         & 0.61 & 0.62 & 0.62 & 27.94 \\
-vm:notdx        & 0.62 & 0.62 & 0.64 &  7.83 \\
-vm:notdx:bypass & 0.62 & 0.62 & 0.63 &  4.11 \\
-vm:tdx          & 1.45 & 1.46 & 1.47 & 31.95 \\
-vm:tdx:bypass   & 1.49 & 1.62 & 1.63 & 29.64 \\
-\bottomrule
-\end{tabular}
-\end{table}
 
 \subsection{Memory overhead}
 We measure the memory overhead of TDX using the following benchmarks using phoronix-test-suite~\cite{phoronix}.
-Here, we report normalized overhead compared to the baremetal (``bare'').
 
 \begin{description}
+
 \item[RAMSpeed~\cite{ramspeed}] This measures the memory latency with several operations. \autoref{fig:ramspeed} shows the results.
 \item[Tinymembench~\cite{tinymembench}] This benchmark measures the memory latency of the system. \autoref{fig:membench} shows the results.
 \item[MBW~\cite{mbw}] This measures the memory bandwidth of the system. \autoref{fig:membench} shows the results.
@@ -200,15 +172,10 @@ We observe the followings from the results.
 \label{sec:app:benchmark}
 
 We measure several application benchmarks using Phoronix Benchmark Suite~\cite{phoronix}.
-We especially run compilation and NPB (NAS Parallel Benchmarks) benchmarks as CPU-intensive applications and lz4 and SQLite benchmarks as memory-intensive applications.
-Here, we report normalized overhead compared to the normal virtual machine (``bare:vm'').
-
-\note{TDX VM (``vm:tdx'') may have additional overhead due to the vCPU over-commitment.}
+We run and redis and SQLite benchmarks as memory-intensive applications.
 
 \begin{description}
-\item[Compilation benchmarks~\cite{compilation}] This measures compilation times of several applications. \autoref{fig:compilation} shows the results.
-\item[NAS parallel benchmarks (NPB)~\cite{npb}] This measures the times of several MPI parallel applications. \autoref{fig:npb} shows the results.
-\item[LZ4~\cite{lz4}] This measures the compression and decompression time with LZ4 algorithm. \autoref{fig:lz4} shows the results.
+\item[Redis~\cite{sqlite_bench}] This measures the times of several MPI parallel applications. \autoref{fig:npb} shows the results.
 \item[SQLite~\cite{sqlite_bench}] This measures the time to perform a pre-defined number of insertions to a SQLite database. \autoref{fig:membench} shows the results.
 \end{description}
 
@@ -221,30 +188,10 @@ We observe the followings from the results.
     \item As of SQLite benchmarks, we observe larger performance overhead in ``vm:tdx'' when copy size is larger than 32. This might be due to the vCPU over-commitment, but further investigation is needed.
 \end{itemize}
 
-\section{Remarks}
-This report presents the basic performance experiments on Intel TDX with QEMU/KVM.
-Further experiments will include but not be limited to the following.
-
-\begin{itemize}
-    \item More detailed breakdown of the overhead in TDX VM, including \#VE and TDX call handling.
-    \item Performance evaluation on other hypervisors such as Cloud Hypervisor.
-    \item Effect of vNUMA. vNUMA is known to have a significant impact on the performance of VM.
-    \item Memory management time in VMs.
-    \item Performance effect of having multiple TDX and Non-TDX VMs.
-    \item Boot time. TDX requires a special memory configuration, which affects the boot time.
-    \item I/O performance with and without TDX-IO.
-    \item Attestation time.
-    \item Migration time.
-\end{itemize}
 
 \printbibliography
 
-\appendix
 \section*{Appendix}
-\myparagraph{Section 3.2 ``BIOS Configurations''}
-\begin{itemize}
-    \item lorem
-\end{itemize}
 
 \myparagraph{Check MSR values}
 We can check related MSR values with the following script.
