@@ -10,6 +10,8 @@
       devShell = pkgs.mkShell {
         buildInputs = [
           pkgs.ninja
+          pkgs.cmake
+          pkgs.glibc
         ];
       };
     }
