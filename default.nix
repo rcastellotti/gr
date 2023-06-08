@@ -1,51 +1,44 @@
 with import <nixpkgs> { };
 let
-  pythonEnv = python3.withPackages (ps: [
-      ps.pandas
-      ps.pexpect
-      ps.matplotlib
-    ]);
   libraries = [ pixman zlib zstd glib libpng snappy ];
 in
 mkShell {
   buildInputs = libraries;
   nativeBuildInputs = [
     #for the sev-tool
-    autoconf
-    automake
+    # autoconf
+    # automake
 
-    #for sev guest
-    ninja
-    nasm
-    acpica-tools
-    flex
-    bison
-    elfutils
-    smatch
-    rpm
+    # #for sev guest
+    # ninja
+    # nasm
+    # acpica-tools
+    # flex
+    # bison
+    # elfutils
+    # smatch
+    # rpm
 
-    #general
-    # bc
-    # dnsmasq
-    pkg-config
-    libvirt
-    virt-manager
-    vim
-    libuuid
-    # file
-    bridge-utils
-    cloud-utils
-    openssl
-    #for the controller
-    cmake
-    git
-    clang
-    cppcheck
-    # doxygen
-    # codespell
-    # abseil-cpp
+    # #general
+    # # bc
+    # # dnsmasq
+    # pkg-config
+    # libvirt
+    # virt-manager
+    # vim
+    # libuuid
+    # # file
+    # bridge-utils
+    # cloud-utilsubun
+    # openssl
+    # #for the controller
+    # cmake
+    # git
+    # clang
+    # cppcheck
+    # # doxygen
+    # # codespell
+    # # abseil-cpp
   ];
-
-  # make install strips valueable libraries from our rpath
   LD_LIBRARY_PATH = lib.makeLibraryPath libraries;
 }
