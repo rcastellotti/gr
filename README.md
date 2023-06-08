@@ -4,8 +4,7 @@
 Compile the custom OVMF and QEMU provided by AMD:
 
 ```bash
-./build.sh qemu
-./build.sh ovmf
+./build.sh
 ```
 
 ## Misc

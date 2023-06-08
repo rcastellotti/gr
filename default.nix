@@ -10,15 +10,6 @@ in
 mkShell {
   buildInputs = libraries;
   nativeBuildInputs = [
-    #for the kernel module build
-    cpuid
-    dmidecode
-    msr
-    msr-tools
-    # linuxPackages_latest.kernel.dev
-    unzip
-    rpm
-
     #for the sev-tool
     autoconf
     automake
@@ -34,14 +25,14 @@ mkShell {
     rpm
 
     #general
-    bc
-    dnsmasq
+    # bc
+    # dnsmasq
     pkg-config
     libvirt
     virt-manager
     vim
     libuuid
-    file
+    # file
     bridge-utils
     cloud-utils
     openssl
@@ -50,15 +41,11 @@ mkShell {
     git
     clang
     cppcheck
-    doxygen
-    codespell
-    abseil-cpp
+    # doxygen
+    # codespell
+    # abseil-cpp
   ];
 
   # make install strips valueable libraries from our rpath
   LD_LIBRARY_PATH = lib.makeLibraryPath libraries;
-  shellHook = ''
-    export KDIR=${linuxPackages_latest.kernel.dev}/lib/modules/${linuxPackages_latest.kernel.dev.modDirVersion}/build
-    export PATH=${pythonEnv}/bin:$PATH
-  ''; 
 }
