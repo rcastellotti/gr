@@ -2,10 +2,12 @@ qemu/
 usr/
 OVMF_files/
 sev.img
+sev.fd
 nosev.fd
 nosev.img
 cloud-config-nosev.iso
+cloud-config-sev.iso
 stdout.log
 ovmf/
 .images/
-jammy-server-cloudimg-amd64.img
+kinetic-server-cloudimg-amd64.img
