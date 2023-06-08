@@ -1,3 +1,4 @@
 qemu/
+usr/
 .images/
 jammy-server-cloudimg-amd64.img
