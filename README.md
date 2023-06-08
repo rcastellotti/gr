@@ -1,7 +1,5 @@
 # GR - Evaluating Confidential Computing with Unikernels
 
-Taken from [dimstav23/GDPRuler/tree/main/AMD_SEV_SNP](https://github.com/dimstav23/GDPRuler/tree/main/AMD_SEV_SNP)  
-
 ## Prepare the host toolchain
 Compile the custom OVMF and QEMU provided by AMD:
 
@@ -15,22 +13,22 @@ Compile the custom OVMF and QEMU provided by AMD:
 - You need to have cloud-config file and a network-config file for your VM, similar to those in the [config](.config/) folder.
 - If you wish to have ssh connection to your VMs, you can adapt the cloud-config files and include your ssh keys, so that cloud-init sets them up automatically in the VM. Example cloud-init configurations that include the placeholders for ssh keys can be found in `.config/`
 - The [`prepare_net_cfg.sh`](./prepare_net_cfg.sh) script takes as a parameter the virtual bridge where the VMs will be connected to and modifies the IP prefix in the network configuration (given as a secord parameter) appropriately.
-- Download an ubuntu image: `wget https://cloud-images.ubuntu.com/kinetic/current/kinetic-server-cloudimg-amd64.img`
+- Download an ubuntu image: `wget https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img`
 
 ## Prepare a NOSEV guest
 
 ```bash
-sudo qemu-img convert kinetic-server-cloudimg-amd64.img ./images/no-sev-server.img
-sudo qemu-img resize ./images/no-sev-server.img +20G
-./prepare_net_cfg.sh -br virbr0 -cfg ./config/network-config-server-nosev.yml
-sudo cloud-localds -N ./config/network-config-server-nosev.yml ./images/server-cloud-config-nosev.iso ./config/cloud-config-server-nosev.yml
+sudo qemu-img convert jammy-server-cloudimg-amd64.img ./images/no-sev.img
+sudo qemu-img resize ./images/no-sev.img +20G
+./prepare_net_cfg.sh -br virbr0 -cfg ./config/network-config-nosev.yml
+sudo cloud-localds -N ./config/network-config-nosev.yml ./images/cloud-config-nosev.iso ./config/cloud-config-nosev.yml
 ```
 ## Launch a NOSEV guest. 
 
 ```bash
-sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./launch-qemu-nosev.sh \
-    -hda ./images/no-sev-server.img \
-    -cdrom ./images/server-cloud-config-nosev.iso \
+sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./launch.sh \
+    -hda ./images/no-sev.img \
+    -cdrom ./images/cloud-config-nosev.iso \
     -bridge virbr0 
 ```
 
@@ -38,21 +36,21 @@ sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./launch-qemu-nosev.sh \
 
 ```bash
 mkdir images
-sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./usr/local/bin/qemu-img convert kinetic-server-cloudimg-amd64.img ./images/sev-server.img
-sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH  ./usr/local/bin/qemu-img resize ./images/sev-server.img +20G 
-./prepare_net_cfg.sh -br virbr0 -cfg ./config/network-config-server-sev.yml
-sudo cloud-localds -N ./config/network-config-server-sev.yml ./images/server-cloud-config-sev.iso ./config/cloud-config-server-sev.yml
+sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH qemu-img convert jammy-server-cloudimg-amd64.img ./images/sev.img
+sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH qemu-img resize ./images/sev.img +20G 
+./prepare_net_cfg.sh -br virbr0 -cfg ./config/network-config-sev.yml
+sudo cloud-localds -N ./config/network-config-sev.yml ./images/cloud-config-sev.iso ./config/cloud-config-sev.yml
 mkdir OVMF_files
-cp ./usr/local/share/qemu/OVMF_CODE.fd ./OVMF_files/OVMF_CODE_server.fd
-cp ./usr/local/share/qemu/OVMF_VARS.fd ./OVMF_files/OVMF_VARS_server.fd
+cp ./usr/local/share/qemu/OVMF_CODE.fd ./OVMF_files/OVMF_CODE_sev.fd
+cp ./usr/local/share/qemu/OVMF_VARS.fd ./OVMF_files/OVMF_VARS_sev.fd
 ```
 
 ## Launch an AMD SEV-SNP guest. 
 
 ```bash
-sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./launch-qemu-sev.sh \
-    -hda ./images/sev-server.img \
-    -cdrom ./images/server-cloud-config-sev.iso \
+sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./launch-sev.sh \
+    -hda ./images/sev.img \
+    -cdrom ./images/cloud-config-sev.iso \
     -sev-snp \
     -bridge virbr0 \
     -bios ./OVMF_files/OVMF_CODE_server.fd \

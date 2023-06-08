@@ -1,13 +1,3 @@
-venv
-.ipynb_checkpoints/
 qemu/
-ovmf/
-images/
-usr/
-monitor
-OVMF_files/
-stdout.log
-kinetic-server-cloudimg-amd64.img
-sev-server.fd
-no-sev-server.fd
-diskless.fd
+.images/
+jammy-server-cloudimg-amd64.img
