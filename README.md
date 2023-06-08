@@ -20,15 +20,15 @@ Compile the custom OVMF and QEMU provided by AMD:
 ```bash
 sudo qemu-img convert jammy-server-cloudimg-amd64.img nosev.img
 sudo qemu-img resize nosev.img +20G
-./prepare_net_cfg.sh -br virbr0 -cfg ./config/network-config-nosev.yml
-sudo cloud-localds -N ./config/network-config-nosev.yml ./images/cloud-config-nosev.iso ./config/cloud-config-nosev.yml
+./prepare_net_cfg.sh -br virbr0 -cfg config/network-config-nosev.yml
+sudo cloud-localds -N ./config/network-config-nosev.yml cloud-config-nosev.iso config/cloud-config-nosev.yml
 ```
 ## Launch a NOSEV guest. 
 
 ```bash
 sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./launch.sh \
-    -hda ./images/no-sev.img \
-    -cdrom ./images/cloud-config-nosev.iso \
+    -hda nosev.img \
+    -cdrom cloud-config-nosev.iso \
     -bridge virbr0 
 ```
 

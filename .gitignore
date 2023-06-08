@@ -2,6 +2,10 @@ qemu/
 usr/
 OVMF_files/
 sev.img
+nosev.fd
 nosev.img
+cloud-config-nosev.iso
+stdout.log
+ovmf/
 .images/
 jammy-server-cloudimg-amd64.img

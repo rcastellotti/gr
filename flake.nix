@@ -42,14 +42,12 @@
     bc
     bashInteractive
     dnsmasq
-    pkg-config
-
-    vim
-    file
     bridge-utils
     cloud-utils
     openssl
         ];
+          LD_LIBRARY_PATH = lib.makeLibraryPath libraries;
+
       };
     };
     
