@@ -1,4 +1,7 @@
 qemu/
 usr/
+OVMF_files/
+sev.img
+nosev.img
 .images/
 jammy-server-cloudimg-amd64.img
