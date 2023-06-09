@@ -9,6 +9,9 @@ Encryption  at rest (designed to prevent the attacker from accessing the unencry
 
 
 ### AMD Secure Memory Encryption (SME)
+AMD SME is the basic building block for the more sophisticated thing we'll cover later, so it might be beneficial to understand how it works. 
+![read-write](img/read_write.png)
+
 ### AMD Secure Encrypyted Virtualization (SEV)
 ### AMD Secure Encrypted Virtualization-Encrypted State (SEV-ES)
 ### AMD Secure Encrypted Virtualization-Secure Nested Paging (SEV-SNP)
@@ -83,3 +86,4 @@ I guess this is because it is not supported,
 + https://cdrdv2.intel.com/v1/dl/getContent/690419 
 + https://www.amd.com/content/dam/amd/en/documents/developer/sev-tio-whitepaper.pdf
 + https://www.amd.com/system/files/TechDocs/58019-svsm-draft-specification.pdf
++ https://www.amd.com/content/dam/amd/en/documents/developer/58207-using-sev-with-amd-epyc-processors.pdf
