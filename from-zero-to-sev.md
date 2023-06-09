@@ -40,6 +40,7 @@ Now we can dump the memory for the processes using `gcore`
 ```bash
 [nix-shell:~]$ sudo gcore -o mem-dump 3115638
 [nix-shell:~]$ grep -rnw mem-dump.3115638 -e "hello from the SEV machine!"
+[nix-shell:~]$ 
 ```
 ```bash
 [nix-shell:~]$ sudo gcore -o mem-dump 3095337
