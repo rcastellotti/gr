@@ -9,8 +9,10 @@ Encryption  at rest (designed to prevent the attacker from accessing the unencry
 
 
 ### AMD Secure Memory Encryption (SME)
-AMD SME is the basic building block for the more sophisticated thing we'll cover later, so it might be beneficial to understand how it works. 
+AMD SME is the basic building block for the more sophisticated thing we'll cover later, so it might be beneficial to understand how it works. Memory operations are performed via dedicated hardware, an entirely different chip on die 
 ![read-write](img/read_write.png)
+
+TSME-m memory guard on ryzen pro
 
 ### AMD Secure Encrypyted Virtualization (SEV)
 ### AMD Secure Encrypted Virtualization-Encrypted State (SEV-ES)
@@ -87,3 +89,4 @@ I guess this is because it is not supported,
 + https://www.amd.com/content/dam/amd/en/documents/developer/sev-tio-whitepaper.pdf
 + https://www.amd.com/system/files/TechDocs/58019-svsm-draft-specification.pdf
 + https://www.amd.com/content/dam/amd/en/documents/developer/58207-using-sev-with-amd-epyc-processors.pdf
++ https://www.amd.com/system/files/TechDocs/cloud-security-epyc-hardware-memory-encryption.pdf
