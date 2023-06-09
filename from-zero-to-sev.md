@@ -5,7 +5,8 @@
 Confidential Computing started to become relevant in the last 10 years. In these years the way software is shipped in production changed radically, almost everyone now uses cloud providers (Google, Microsoft and Amazon), this leads to customers running their code on machines they don't own. It is logic that customers want to be sure no one can access their code, not other customers running vms on the same hardware, nor whoever is controlling the hypervisor (cloud vendor) or in worst case scenarios malign actors who compromised the physical machine. 
 In some sectors it might be crucial that whoever is running our workloads has no access to our customer's data.
 
-### simple attack (from amd whitepaper)
+### demo attack to show how simple it is to read memory inside a vm if hypervisor is compromised or an human operator is acting maliciously
+
 Let's demo a very simple attack, first of all we start two machines, `sev` and `nosev`, the former has SEV enabled, as we can check:
 
 ```bash
@@ -28,6 +29,7 @@ ubuntu@nosev:~$ cat nosev.txt
 hello from the NOSEV machine!
 ```
 
+We now get the processe's PIDS: 
 
 ```bash
 [nix-shell:~]$ ps -aux | grep qemu
@@ -37,11 +39,13 @@ roberto  3121836  0.0  0.0   6632  1828 pts/3    S+   13:20   0:00 grep qemu
 ```
 
 Now we can dump the memory for the processes using `gcore`
+
 ```bash
 [nix-shell:~]$ sudo gcore -o mem-dump 3115638
 [nix-shell:~]$ grep -rnw mem-dump.3115638 -e "hello from the SEV machine!"
 [nix-shell:~]$ 
 ```
+
 ```bash
 [nix-shell:~]$ sudo gcore -o mem-dump 3095337
 [nix-shell:~]$ grep -rnw mem-dump.3095337 -e "hello from the NOSEV machine!"
