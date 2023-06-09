@@ -2,23 +2,24 @@
 
 ## from zero to SEV-SNP
 
-Confidential Computing started to become relevant in the last 10 years. In these years the way software is shipped in production changed radically, almost everyone now uses cloud providers (Google, Microsoft and Amazon), this leads to customers running their code on machines they don't own. It is logic that customers want to be sure no one can access their code, cloud vendor included.
+Confidential Computing started to become relevant in the last 10 years. In these years the way software is shipped in production changed radically, almost everyone now uses cloud providers (Google, Microsoft and Amazon), this leads to customers running their code on machines they don't own. It is logic that customers want to be sure no one can access their code, not other customers running vms on the same hardware, nor whoever is controlling the hypervisor (cloud vendor) or in worst case scenarios malign actors who compromised the physical machine. 
+In some sectors it might be crucial that whoever is running our workloads has no access to our customer's data.
 
 Encryption  at rest (designed to prevent the attacker from accessing the unencrypted data by ensuring the data is encrypted when on disk from Microsoft, cite properly) has been around for a long time, but this leaves a big part of daily computing unencrypted, namely RAM and CPU registers, to tackle this issue major chip producers started to develop a technlogy to enable "confidential computing", namely AMD Secure Encrypted Virtualization (SEV) and Intel Trusted Domain Extensions (TDX). In this short article we try to understand a little more about AMD SEV, assuming nothing and getting our hands dirty step by step.
 
 
 ### AMD Secure Memory Encryption (SME)
 ### AMD Secure Encrypyted Virtualization (SEV)
+### AMD Secure Encrypted Virtualization-Encrypted State (SEV-ES)
+### AMD Secure Encrypted Virtualization-Secure Nested Paging (SEV-SNP)
+### AMD Secure Encrypted Virtualization-Secure Trusted I/O  (SEV-TIO)
 
 
+### Launching a SEV machine with QEMU
 
 ## libvirt
 
-### questions:
-+ can we provide a demo of docker protected by SEV?
-
-
-## launching a sev machine 
+What is libvirt? 
 
 ```bash
 wget https://cloud-images.ubuntu.com/focal/current/jammy-server-cloudimg-amd64.img
@@ -51,18 +52,18 @@ sudo virt-install \
 sudo virsh -c qemu:///system undefine --nvram sev
 sudo virsh -c qemu:///system destroy sev
 
-When launching a SEV machine like this I cannot enable SEV-SNP
-I guess this is because it is not supported, 
-
-# qemu-img create -f qcow2 ubuntu-18.04.qcow2 30G questo comando cosa fa?
-
-# ovmf what the f is this 
-
-```
-
+#### OVMF
 ok so apparently the ovmf fd stuff is something that contians the executable firmware and the non-volatile variable store,  we shall make a vm specific copy because the variable store 
 should be private to each virtual machine
 
+When launching a SEV machine like this I cannot enable SEV-SNP
+I guess this is because it is not supported, 
+
+```
+
+
+### questions:
++ can we provide a demo of docker protected by SEV?
 
 ## References
 + https://www.amd.com/system/files/TechDocs/memory-encryption-white-paper.pdf
@@ -80,3 +81,5 @@ should be private to each virtual machine
 + https://www.amd.com/en/developer/sev.html
 + https://arch.cs.ucdavis.edu/assets/papers/ipdps21-hpc-tee-performance.pdf
 + https://cdrdv2.intel.com/v1/dl/getContent/690419 
++ https://www.amd.com/content/dam/amd/en/documents/developer/sev-tio-whitepaper.pdf
++ https://www.amd.com/system/files/TechDocs/58019-svsm-draft-specification.pdf
