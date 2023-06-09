@@ -10,13 +10,12 @@ In some sectors it might be crucial that whoever is running our workloads has no
 Let's demo a very simple attack, first of all we start two machines, `sev` and `nosev`, the former has SEV enabled, as we can check:
 
 ```bash
-# this command is meant to be run inside the machine with SEV enabled
 ubuntu@sev:~$ sudo dmesg | grep SEV
 [   18.360846] Memory Encryption Features active: AMD SEV SEV-ES SEV-SNP
 [   18.590902] SEV: Using SNP CPUID table, 31 entries present.
 [   18.850633] SEV: SNP guest platform device initialized.
 ```
-
+We will write something into a file and cat it in order to load the data in memory
 ```bash
 ubuntu@sev:~$ echo "hello from the SEV machine!" > sev.txt
 ubuntu@sev:~$ cat sev.txt 
@@ -29,7 +28,7 @@ ubuntu@nosev:~$ cat nosev.txt
 hello from the NOSEV machine!
 ```
 
-We now get the processe's PIDS: 
+We now get the processes' PIDS to inspect the memory: 
 
 ```bash
 [nix-shell:~]$ ps -aux | grep qemu
@@ -51,6 +50,8 @@ Now we can dump the memory for the processes using `gcore`
 [nix-shell:~]$ grep -rnw mem-dump.3095337 -e "hello from the NOSEV machine!"
 grep: mem-dump.3095337: binary file matches
 ```
+From the host machine we are able to see nosev's machine memory while this is not possible with SEV enabled.
+
 
 Encryption  at rest (designed to prevent the attacker from accessing the unencrypted data by ensuring the data is encrypted when on disk from Microsoft, cite properly) has been around for a long time, but this leaves a big part of daily computing unencrypted, namely RAM and CPU registers, to tackle this issue major chip producers started to develop a technlogy to enable "confidential computing", namely AMD Secure Encrypted Virtualization (SEV) and Intel Trusted Domain Extensions (TDX). In this short article we try to understand a little more about AMD SEV, assuming nothing and getting our hands dirty step by step.
 
