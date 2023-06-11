@@ -108,7 +108,7 @@ sudo qemu-img convert jammy-server-cloudimg-amd64.img /var/lib/libvirt/images/se
 sudo cloud-localds /var/lib/libvirt/images/sev-cloud-config.iso config/cloud-config-sev.yml
 ```
 
-```bash
+```console
 sudo virt-install \
               --name sev \
               --memory 4096 \
