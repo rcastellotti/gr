@@ -81,9 +81,26 @@ TSME IS CALLED memory guard on ryzen pro
 
 ### Launching a SEV machine with QEMU
 
+
+## benchmarks
+
+### Memory overhead
+
++ Tinymembench
++ MBW
+
+### CPU Benchmarks 
++ LZ4 ~> This measures the compression and decompression time with LZ4 algorithm.
++ compilation (linux llvm godot imagemagick)
+
+### I/O related benchmarks
+
++ SQLite ~> This measures the time to perform a pre-defined number of insertions to a SQLite database.
++ Redis benchmark
+
+
 ## libvirt
 
-What is libvirt?
 
 ```bash
 wget https://cloud-images.ubuntu.com/focal/current/jammy-server-cloudimg-amd64.img
@@ -170,7 +187,7 @@ on the sev machine
 ubuntu@sev:~$ cpuid -1 -r -l 0x8000001F
 CPU:
    0x8000001f 0x00: eax=0x0000001a ebx=0x00000073 ecx=0x00000000 edx=0x00000000
-   
+
 ubuntu@sev:~$ cpuid -1  -l 0x8000001F
 CPU:
    AMD Secure Encryption (0x8000001f):
@@ -280,22 +297,5 @@ CPUs (16) and 16G of memory.
 | Guest Memory | 16GB                                                                         |
 | Guest Kernel | 5.19.0-41-generic #42-Ubuntu SMP PREEMPT_DYNAMIC (Ubuntu 22.10 )             |
 
-# Micro Benchmarks
-
-## Memory overhead
-
-+ Tinymembench
-+ MBW
-
-# CPU Benchmarks {#sec:app:benchmark}
-+ LZ4 ~> This measures the compression and decompression time with LZ4 algorithm.
-+ compilation (linux llvm godot imagemagick)
-
-## I/O related benchmarks
-
-+ SQLite ~> This measures the time to perform a pre-defined number of insertions to a SQLite database.
-+ Redis benchmark
 
 #### Section 3.2 "BIOS Configurations"
-
-#### Check MSR values
