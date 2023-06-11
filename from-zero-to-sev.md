@@ -121,6 +121,7 @@ I guess this is because it is not supported,
 + can we provide a demo of docker protected by SEV?
 
 ## References
+
 + https://www.amd.com/system/files/TechDocs/memory-encryption-white-paper.pdf
 + https://www.amd.com/system/files/techdocs/sev-snp-strengthening-vm-isolation-with-integrity-protection-and-more.pdf
 + https://documentation.suse.com/sles/15-SP1/html/SLES-amd-sev/art-amd-sev.html
@@ -141,3 +142,4 @@ I guess this is because it is not supported,
 + https://www.amd.com/content/dam/amd/en/documents/developer/58207-using-sev-with-amd-epyc-processors.pdf
 + https://www.amd.com/system/files/TechDocs/40332.pdf
 + https://www.amd.com/system/files/TechDocs/cloud-security-epyc-hardware-memory-encryption.pdf
++ https://www.youtube.com/watch?v=yPr7zYTXA7I
