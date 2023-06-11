@@ -9,6 +9,8 @@ mkShell {
     pkg-config
     nasm
     acpica-tools
+    # needed for the first demo
+    gdb
   ];
   LD_LIBRARY_PATH = lib.makeLibraryPath libraries;
 }
