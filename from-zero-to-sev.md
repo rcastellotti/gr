@@ -132,6 +132,9 @@ I guess this is because it is not supported,
 - more info about Amd Secure processor??
 - can we provide a demo of docker protected by SEV?
 
+## todo
+
+- barplot with benchmark results (maybe split by category: memory, cpu, io use seaborn)
 ## References
 
 - https://www.amd.com/system/files/TechDocs/memory-encryption-white-paper.pdf
@@ -163,8 +166,6 @@ We report a preliminary performance evaluation of AMD SEV (Secure
 We run our experiments on ryan, we using a patched version of QEMU from
 AMD. Do we need additional info about the system? Specify what is
 enabled (SEV-SNP and other stuff) Specify the CPU
-[\[tab:experiment-environment\]](#tab:experiment-environment){reference-type="autoref"
-reference="tab:experiment-environment"} shows the detailed environment.
 We use QEMU/KVM as a hypervisor. We assign the guest the same amount of
 CPUs (16) and 16G of memory.
 
@@ -184,60 +185,20 @@ CPUs (16) and 16G of memory.
 
 ## Memory overhead
 
-We measure the memory overhead of TDX using the following benchmarks
-using phoronix-test-suite [@phoronix]. Here, we report normalized
-overhead compared to the baremetal ("bare").
++ Tinymembench
++ MBW
 
-RAMSpeed [@ramspeed]
-Tinymembench [@tinymembench]
-MBW [@mbw]
+# CPU Benchmarks {#sec:app:benchmark}
++ LZ4 ~> This measures the compression and decompression time with LZ4 algorithm.
++ compilation (linux llvm godot imagemagick)
 
-# Application Benchmarks {#sec:app:benchmark}
+## I/O related benchmarks
 
-We measure several application benchmarks using Phoronix Benchmark
-Suite [@phoronix]. We especially run compilation and NPB (NAS Parallel
-Benchmarks) benchmarks as CPU-intensive applications and lz4 and SQLite
-benchmarks as memory-intensive applications. Here, we report normalized
-overhead compared to the normal virtual machine ("bare:vm").
-
-[**NOTE**: TDX VM ("vm:tdx") may have additional overhead due to the
-vCPU over-commitment.]{style="color: red"}
-
-Compilation benchmarks [@compilation]
-
-: This measures compilation times of several applications.
-[\[fig:compilation\]](#fig:compilation){reference-type="autoref"
-reference="fig:compilation"} shows the results.
-
-NAS parallel benchmarks (NPB) [@npb]
-
-: This measures the times of several MPI parallel applications.
-[\[fig:npb\]](#fig:npb){reference-type="autoref"
-reference="fig:npb"} shows the results.
-
-LZ4 [@lz4]
-
-: This measures the compression and decompression time with LZ4
-algorithm. [\[fig:lz4\]](#fig:lz4){reference-type="autoref"
-reference="fig:lz4"} shows the results.
-
-SQLite [@sqlite_bench]
-
-: This measures the time to perform a pre-defined number of insertions
-to a SQLite database.
-[\[fig:membench\]](#fig:membench){reference-type="autoref"
-reference="fig:membench"} shows the results.
-
-We observe the followings from the results.
++ SQLite ~> This measures the time to perform a pre-defined number of insertions to a SQLite database.
++ Redis benchmark
 
 #### Section 3.2 "BIOS Configurations"
 
-- lorem
-
 #### Check MSR values
 
-We can check related MSR values with the following script.
 
-```{.c language="c"}
-
-```
