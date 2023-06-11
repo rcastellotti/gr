@@ -65,6 +65,8 @@ AMD SME is the basic building block for the more sophisticated thing we'll cover
 2. **AMD Secure Processor**: provides cryptographic functionality for secure key generation and key management
 
 ![read-write](img/read_write.png)
+
+
 The key used to encyrpt and decrypt memory is generated securely by the AMD Secure-Processor (SMD-SP), a 32 bit microcontroller and it is not accesible by software running on the main CPU, furthermore SME does not require software running on main CPU to partecipate in Key Management making this enclave more secure.
 
 We may choose to encrypt only certain memory pages, this is marked by
@@ -82,24 +84,24 @@ TSME IS CALLED memory guard on ryzen pro
 ### Launching a SEV machine with QEMU
 
 
-## benchmarks
+### benchmarks
 
-### Memory overhead
+#### Memory overhead
 
 + Tinymembench
 + MBW
 
-### CPU Benchmarks 
+#### CPU Benchmarks 
 + LZ4 ~> This measures the compression and decompression time with LZ4 algorithm.
 + compilation (linux llvm godot imagemagick)
 
-### I/O related benchmarks
+#### I/O related benchmarks
 
 + SQLite ~> This measures the time to perform a pre-defined number of insertions to a SQLite database.
 + Redis benchmark
 
 
-## libvirt
+### libvirt
 
 
 ```bash
@@ -126,7 +128,6 @@ sudo virt-install \
 
 ## connect to the machine
 
-23063879273
 `sudo virsh -c qemu:///system console sev`
 
 ## delete the machine
