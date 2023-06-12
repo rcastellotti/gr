@@ -151,12 +151,7 @@ I guess this is because it is not supported,
 - can we provide a demo of docker protected by SEV?
 - can you explain this? 
 
-on ryan:
 ```
-[nix-shell:/scratch/roberto/gr]$ cpuid -1 -r -l 0x8000001F
-    CPU:
-    0x8000001f 0x00: eax=0x0101fd3f ebx=0x00004173 ecx=0x000001fd edx=0x00000080
-
 [nix-shell:/scratch/roberto/gr]$ cpuid -1 -l 0x8000001F
     CPU:
     AMD Secure Encryption (0x8000001f):
@@ -181,72 +176,6 @@ on ryan:
         number of VM permission levels           = 0x4 (4)
         number of SEV-enabled guests supported   = 0x1fd (509)
         minimum SEV guest ASID                   = 0x80 (128)
-```
-
-on the sev machine
-```
-ubuntu@sev:~$ cpuid -1 -r -l 0x8000001F
-CPU:
-   0x8000001f 0x00: eax=0x0000001a ebx=0x00000073 ecx=0x00000000 edx=0x00000000
-
-ubuntu@sev:~$ cpuid -1  -l 0x8000001F
-CPU:
-   AMD Secure Encryption (0x8000001f):
-      SME: secure memory encryption support    = false
-      SEV: secure encrypted virtualize support = true
-      VM page flush MSR support                = false
-      SEV-ES: SEV encrypted state support      = true
-      SEV-SNP: SEV secure nested paging        = true
-      VMPL: VM permission levels               = false
-      Secure TSC supported                     = false
-      virtual TSC_AUX supported                = false
-      hardware cache coher across enc domains  = false
-      SEV guest exec only from 64-bit host     = false
-      restricted injection                     = false
-      alternate injection                      = false
-      full debug state swap for SEV-ES guests  = false
-      disallowing IBS use by host              = false
-      VTE: SEV virtual transparent encryption  = false
-      VMSA register protection                 = false
-      encryption bit position in PTE           = 0x33 (51)
-      physical address space width reduction   = 0x1 (1)
-      number of VM permission levels           = 0x0 (0)
-      number of SEV-enabled guests supported   = 0x0 (0)
-      minimum SEV guest ASID                   = 0x0 (0)
-
-```
-
-on the nosev machine:
-
-```
-ubuntu@nosev:~$ cpuid -1 -r -l 0x8000001F
-CPU:
-   0x8000001f 0x00: eax=0x00000000 ebx=0x00000000 ecx=0x00000000 edx=0x00000000
-
-ubuntu@nosev:~$ cpuid -1 -l 0x8000001F
-CPU:
-   AMD Secure Encryption (0x8000001f):
-      SME: secure memory encryption support    = false
-      SEV: secure encrypted virtualize support = false
-      VM page flush MSR support                = false
-      SEV-ES: SEV encrypted state support      = false
-      SEV-SNP: SEV secure nested paging        = false
-      VMPL: VM permission levels               = false
-      Secure TSC supported                     = false
-      virtual TSC_AUX supported                = false
-      hardware cache coher across enc domains  = false
-      SEV guest exec only from 64-bit host     = false
-      restricted injection                     = false
-      alternate injection                      = false
-      full debug state swap for SEV-ES guests  = false
-      disallowing IBS use by host              = false
-      VTE: SEV virtual transparent encryption  = false
-      VMSA register protection                 = false
-      encryption bit position in PTE           = 0x0 (0)
-      physical address space width reduction   = 0x0 (0)
-      number of VM permission levels           = 0x0 (0)
-      number of SEV-enabled guests supported   = 0x0 (0)
-      minimum SEV guest ASID                   = 0x0 (0)
 ```
 
 ## todo
