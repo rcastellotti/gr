@@ -69,9 +69,39 @@ AMD SME is the basic building block for the more sophisticated thing we'll cover
 
 The key used to encyrpt and decrypt memory is generated securely by the AMD Secure-Processor (SMD-SP), a 32 bit microcontroller and it is not accesible by software running on the main CPU, furthermore SME does not require software running on main CPU to partecipate in Key Management making this enclave more secure.
 
-We may choose to encrypt only certain memory pages, this is marked by
+Control over which pages to encrpyt is handled by checking a bit in page tables, the specific bit, called C-bit, can be retrieved toghether with some additional infos by running the following command:
 
-TSME IS CALLED memory guard on ryzen pro
+```console
+[nix-shell:/scratch/roberto/gr]$ cpuid -1 -l 0x8000001F
+    CPU:
+    AMD Secure Encryption (0x8000001f):
+        SME: secure memory encryption support    = true
+        SEV: secure encrypted virtualize support = true
+        VM page flush MSR support                = true
+        SEV-ES: SEV encrypted state support      = true
+        SEV-SNP: SEV secure nested paging        = true
+        VMPL: VM permission levels               = true
+        Secure TSC supported                     = true
+        virtual TSC_AUX supported                = false
+        hardware cache coher across enc domains  = true
+        SEV guest exec only from 64-bit host     = true
+        restricted injection                     = true
+        alternate injection                      = true
+        full debug state swap for SEV-ES guests  = true
+        disallowing IBS use by host              = true
+        VTE: SEV virtual transparent encryption  = true
+        VMSA register protection                 = true
+        encryption bit position in PTE           = 0x33 (51)
+        physical address space width reduction   = 0x5 (5)
+        number of VM permission levels           = 0x4 (4)
+        number of SEV-enabled guests supported   = 0x1fd (509)
+        minimum SEV guest ASID                   = 0x80 (128)
+```
+In our case it is the 51th bit (0x33 in hex).
+
+Encryption and decryption may lead to an increase in latency in memory operations, this will be matter of further discussion.
+
+SME is a very powerful mechanism to provide memory encryption, but it requires support from the Operating System/Hypervisor, Transparent SME (TSME) is a solution to encrypt every memmory page regardeless of the C-bit, this provides encryption without further modification to OS/HV. 
 
 ### AMD Secure Encrypyted Virtualization (SEV)
 
@@ -79,30 +109,7 @@ TSME IS CALLED memory guard on ryzen pro
 
 ### AMD Secure Encrypted Virtualization-Secure Nested Paging (SEV-SNP)
 
-### AMD Secure Encrypted Virtualization-Secure Trusted I/O (SEV-TIO)
-
-### Launching a SEV machine with QEMU
-
-
-### benchmarks
-
-#### Memory overhead
-
-+ Tinymembench
-+ MBW
-
-#### CPU Benchmarks 
-+ LZ4 ~> This measures the compression and decompression time with LZ4 algorithm.
-+ compilation (linux llvm godot imagemagick)
-
-#### I/O related benchmarks
-
-+ SQLite ~> This measures the time to perform a pre-defined number of insertions to a SQLite database.
-+ Redis benchmark
-
-
-### libvirt
-
+### Launching a SEV machine raw QEMU + libvirt
 
 ```bash
 wget https://cloud-images.ubuntu.com/focal/current/jammy-server-cloudimg-amd64.img
@@ -145,41 +152,24 @@ I guess this is because it is not supported,
 
 ```
 
-### questions:
+### benchmarks
 
-- more info about Amd Secure processor??
-- can we provide a demo of docker protected by SEV?
-- can you explain this? 
++ Test different system configs (memory and CPUS)
++ Test different machines running at the same time
++ memory: Tinymembench, MBW
++ cpu: compilation (linux llvm godot imagemagick) + LZ4 ~> This measures the compression and decompression time with LZ4 algorithm.
++ I/O: SQLite ~> This measures the time to perform a pre-defined number of insertions to a SQLite database, Redis benchmark
 
-```
-[nix-shell:/scratch/roberto/gr]$ cpuid -1 -l 0x8000001F
-    CPU:
-    AMD Secure Encryption (0x8000001f):
-        SME: secure memory encryption support    = true
-        SEV: secure encrypted virtualize support = true
-        VM page flush MSR support                = true
-        SEV-ES: SEV encrypted state support      = true
-        SEV-SNP: SEV secure nested paging        = true
-        VMPL: VM permission levels               = true
-        Secure TSC supported                     = true
-        virtual TSC_AUX supported                = false
-        hardware cache coher across enc domains  = true
-        SEV guest exec only from 64-bit host     = true
-        restricted injection                     = true
-        alternate injection                      = true
-        full debug state swap for SEV-ES guests  = true
-        disallowing IBS use by host              = true
-        VTE: SEV virtual transparent encryption  = true
-        VMSA register protection                 = true
-        encryption bit position in PTE           = 0x33 (51)
-        physical address space width reduction   = 0x5 (5)
-        number of VM permission levels           = 0x4 (4)
-        number of SEV-enabled guests supported   = 0x1fd (509)
-        minimum SEV guest ASID                   = 0x80 (128)
-```
+### AMD Secure Encrypted Virtualization-Secure Trusted I/O (SEV-TIO)
+
+
+### Sev on containers (kata)
+
+
+
 
 ## todo
-
+- bios configuration
 - barplot with benchmark results (maybe split by category: memory, cpu, io use seaborn)
 ## References
 
