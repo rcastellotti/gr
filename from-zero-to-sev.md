@@ -113,15 +113,7 @@ AMD SEV is an attempt to make virtual machines more secure to use by encrypting 
 
 Let's now explore how SEV works, SEV is an extension to the AMD-V architecture, when SEV is enabled SEV machines tag data with VM ASID (an unique identifier for that specific machine), this tag is used inside the SOC and prevents external entities to access it, when data leaves the chip we have no such problem because it is encrypted using the previously exchanged AES-128 bit key. These two things provide strong cryptography isolation between VMs run by the same hypervisor and between VMs and the hypervisor by itself. SEV guests can choose which pages to encrypt, this is handled setting the c-bit as mentioned before for SME. Only pages meant fot oustide communcations are considered shared and thus not encrypted.
 
-#### Threat Model
 
-In this computing model we consider:
-
-+ **AMD System-On-Chip (SOC) hardware**, **AMD Secure Processor (AMD-SP)** and the **VM** are fully trusted, to this extend the VM should enable Full Disk Encryption (FDE) at rest, such as LUKS (cite), major cloud providers have been supporting FDE for long time:  https://cloud.google.com/docs/security/encryption/default-encryption
-
-+ BIOS on the host system, the Hypervisor, device drivers, other VMS are fully untrusted, this means the threat model assumes they are malicious and may conspire to compromise the securiy of our Confidential Virtual Machine.
-
-more details discussed here: https://www.amd.com/system/files/TechDocs/SEV-SNP-strengthening-vm-isolation-with-integrity-protection-and-more.pdf
 
 ### AMD Secure Encrypted Virtualization-Encrypted State (SEV-ES)
 
@@ -140,6 +132,39 @@ Whenever hardware saves register it encrypts them with the very same AES-128 key
 Similarly to AMD-SEV AMD-ES is completely transparent to application code, only the guest VM and the Hypervisor need to implement these specific features.
 
 ### AMD Secure Encrypted Virtualization-Secure Nested Paging (SEV-SNP)
+
+After the introduction of AMD-SEV an AMD-ES AMD decided to introduce the next generation of SEV called Secure Nested Paging (SEV-SNP), this technlogy build on top of the aforementioned technlogies and extends them further to implement strong memory integrity protection to prevent Hypervisor based attacks, such as replay attacks and memory remapping, data corruction and memory aliasing
+
++ replay attacks: a malicious actor captures a state at a certain moment and modifies memory succesfully with those values
++ data corruction: even though an attacker cannot read a memory he can simply corrupt the memory to trick the machine into unpredicted behaviour
++ memory aliasing: an external actor may map a memory page to multiple physical pages
++ memory remapping: the intruder maps a page to a different physical page
+
+These attacks are a problem because a running program has no notion of memory integrity, they could end up in a state that was not originally considered by the developers and this may lead to huge security issues.
+
+The basic principle of SEV-SNP integrity is that if a VM is able to read a private (encrypted) page of memory, it must always read the value it last wrote. (cite) What this means is the VM should be able to throw an exception if the memory a process is trying to access was tampered by external actors.
+
+
+#### Threat Model
+
+In this computing model we consider:
+
++ **AMD System-On-Chip (SOC) hardware**, **AMD Secure Processor (AMD-SP)** and the **VM** are fully trusted, to this extend the VM should enable Full Disk Encryption (FDE) at rest, such as LUKS (cite), major cloud providers have been supporting FDE for long time:  https://cloud.google.com/docs/security/encryption/default-encryption
+
++ BIOS on the host system, the Hypervisor, device drivers, other VMS are fully untrusted, this means the threat model assumes they are malicious and may conspire to compromise the securiy of our Confidential Virtual Machine.
+
+more details discussed here: https://www.amd.com/system/files/TechDocs/SEV-SNP-strengthening-vm-isolation-with-integrity-protection-and-more.pdf
+
+
+The way SEV-SNP ensures protection against the attacks we mentioned before is by introudcing a new data structure, a Reverse Map Table (RMP) that tracks owners of memory pages, in this way we can enforce that only the owner of a certain memory page can alter it. A page can be owned by the VM, the Hypervisor or by the AMD Secure Processor. The RMP is used in conjunction with standard x86 page tables mechanisms to enforce memory restrictions and page access rights. RMP fixes replay, remapping and data corruction attacks. 
+
+RMP checks are introduced for write operations on memory, however external (Hypervisor) read accesses do not require them because we have AES encryption protecting our memory.
+
+To prevent memory remapping a technique called Page Validation is introduced.
+Inside each RMP entry there is a Validated bit, pages assigned to guests that have no validated bit set are not usable by the Hypervisor, the guest can only use the page after setting the validated bit through a `PVALIDATE` instruction. The VM will make sure that it is not possible to validate a SPA (system phyiscal address) corresponding to a GPA (Guest Physical Address) more than once.
+
+
+We now introduced every part of AMD's effort to popularize Confidential Computing, now we will proceed by giving instructions to start such machines using QEMU/KVM and we will run some benchmarks to measure how these technlogies impact performance
 
 ### Launching a SEV machine raw QEMU + libvirt
 
