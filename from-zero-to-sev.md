@@ -103,9 +103,41 @@ Encryption and decryption may lead to an increase in latency in memory operation
 
 SME is a very powerful mechanism to provide memory encryption, but it requires support from the Operating System/Hypervisor, Transparent SME (TSME) is a solution to encrypt every memmory page regardeless of the C-bit, this provides encryption without further modification to OS/HV. 
 
+We now introduce AMD SEV, a technology powered by AMD SME that enables condfidential computing for virtual machines.
+
 ### AMD Secure Encrypyted Virtualization (SEV)
 
+AMD SEV is an attempt to make virtual machines more secure to use by encrypting data to and from a virtual machine, and enables a new security model protecting code from higher privileged resources, such as hypervisors. In this context, as mentioned before, we should never trust the hypervisor since it may be compromised or acting maliciously by default.
+
+![](img/security-layers.png)
+
+Let's now explore how SEV works, SEV is an extension to the AMD-V architecture, when SEV is enabled SEV machines tag data with VM ASID (an unique identifier for that specific machine), this tag is used inside the SOC and prevents external entities to access it, when data leaves the chip we have no such problem because it is encrypted using the previously exchanged AES-128 bit key. These two things provide strong cryptography isolation between VMs run by the same hypervisor and between VMs and the hypervisor by itself. SEV guests can choose which pages to encrypt, this is handled setting the c-bit as mentioned before for SME. Only pages meant fot oustide communcations are considered shared and thus not encrypted.
+
+#### Threat Model
+
+In this computing model we consider:
+
++ **AMD System-On-Chip (SOC) hardware**, **AMD Secure Processor (AMD-SP)** and the **VM** are fully trusted, to this extend the VM should enable Full Disk Encryption (FDE) at rest, such as LUKS (cite), major cloud providers have been supporting FDE for long time:  https://cloud.google.com/docs/security/encryption/default-encryption
+
++ BIOS on the host system, the Hypervisor, device drivers, other VMS are fully untrusted, this means the threat model assumes they are malicious and may conspire to compromise the securiy of our Confidential Virtual Machine.
+
+more details discussed here: https://www.amd.com/system/files/TechDocs/SEV-SNP-strengthening-vm-isolation-with-integrity-protection-and-more.pdf
+
 ### AMD Secure Encrypted Virtualization-Encrypted State (SEV-ES)
+
+Up until now we only discussed encryption for memory, but a crucial portion of the system we want to protect are CPU registers, AMD SEV-ES encrypts all CPU register contents when a VM stops running. What this means is a malevolent actor is not able to read CPU's register contents when the machine is shutdown.
+
+The CPU register's state is saved and encrypted when the machine is shutdown.
+
+Protecting CPU register may be a daunting task because sometimes an Hypervisor may need to access VM CPU's register to provide services such as device emulation. These accesses must be protected, ES technlogy allows the guest VM to decide which registers are encrypted, in the same vein a machine can choose which memory pages are to be encrypted via the C-bit.
+
+SEV-ES introuduce a single atomic hardware instruction: `VMRUN`, when this intruction is executed for a guest the CPU loads all registers,
+when the VM is stops runnning (`VMEXIT`), register's state is saved automatically to  back to memory. These instructions are atomic because we need to be sure no one can sneak into this process and alter it and it is impossible to leak memory.
+
+Whenever hardware saves register it encrypts them with the very same AES-128 key we mentioned before, furthermore the CPU computes an integrity-check value and saves it into memory not accessible by the CPU, on next `VMRUN` instruction this will be checked to ensure nobody tried to tamper register's state. For further information about external communication consult the whitepaper (CITE) and amd reference manual chapter 15.
+
+
+Similarly to AMD-SEV AMD-ES is completely transparent to application code, only the guest VM and the Hypervisor need to implement these specific features.
 
 ### AMD Secure Encrypted Virtualization-Secure Nested Paging (SEV-SNP)
 
@@ -169,13 +201,16 @@ I guess this is because it is not supported,
 
 
 ## todo
+- set ovmf version
 - bios configuration
+- numa enabled/disabled
 - barplot with benchmark results (maybe split by category: memory, cpu, io use seaborn)
 ## References
-
+https://www.amd.com/system/files/documents/using-amd-secure-encrypted-virtualization-encrypted-state-on-think-system-servers.pdf
 - https://www.amd.com/system/files/TechDocs/memory-encryption-white-paper.pdf
 - https://www.amd.com/system/files/techdocs/sev-snp-strengthening-vm-isolation-with-integrity-protection-and-more.pdf
 - https://documentation.suse.com/sles/15-SP1/html/SLES-amd-sev/art-amd-sev.html
+- https://www.amd.com/system/files/TechDocs/Protecting%20VM%20Register%20State%20with%20SEV-ES.pdf
 - https://help.ovhcloud.com/csm/en-dedicated-servers-amd-sme-sev?id=kb_article_view&sysparm_article=KB0044018
 - https://libvirt.org/kbase/launch_security_sev.html
 - https://documentation.suse.com/de-de/sles/15-SP4/html/SLES-all/article-amd-sev.html#table-guestpolicy
@@ -195,7 +230,9 @@ I guess this is because it is not supported,
 - https://www.amd.com/system/files/TechDocs/cloud-security-epyc-hardware-memory-encryption.pdf
 - http://events17.linuxfoundation.org/sites/events/files/slides/AMD%20SEV-ES.pdf
 - cpuid and some other interesting demos: https://blogs.oracle.com/linux/post/using-amd-secure-memory-encryption-with-oracle-linux
-
+- https://jcadden.medium.com/
+confidential-computing-with-kubernetes-sev-guest-protection-for-kata-containers-8f29f0a3a2d7
+- https://www.kernel.org/doc/html/v5.6/virt/kvm/amd-memory-encryption.html
 ## imported from the old report:
 
 We report a preliminary performance evaluation of AMD SEV (Secure
