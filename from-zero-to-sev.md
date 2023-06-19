@@ -169,13 +169,502 @@ We now introduced every part of AMD's effort to popularize Confidential Computin
 
 First of all we need to launch some machines with SEV enabled, we could use libvirt, check `launch-libvirt.sh` to see instructions to launch a SEV machine with SEV enabled, but since SEV-SNP is not supported yet by upstream QEMU we will use QEMU and OVMF patched by AMD.
 
-#### OVMF
-ok so apparently the ovmf fd stuff is something that contians the executable firmware and the non-volatile variable store,  we shall make a vm specific copy because the variable store
-should be private to each virtual machine
+OVMF is a project maintanied by TianCore aiming to enable UEFI support for virtual machines, it is based on EDK 2, we will use OVMF to generate the executable firmware and the non-volatile variable store, it is important to create a vm-specific cody of `OVMF_vars.fd` because the variable store should be private for every virtual machine
 
-When launching a SEV machine like this I cannot enable SEV-SNP
-I guess this is because it is not supported,
+QEMU is a generic open source machine emulator and virtualizer, we will use QEMU toghether with KVM, the Kernel Virtual machine to virtualize our machines.
 
+We are using nix as a package manager to make our experiments reproducible, before running any command below activate the nix shell with `nix-shell` (make sure to run this command in the home directory).  The first thing we need to do is build our patched versions of QEMU and OVMF, we can do so by running the `./build.sh` script we provided (cite). As operating system we are going to use ubuntu cloud images as they are way smaller than the desktop relaeases, this means we will need to use `cloud-localds` (cite) to create a disk for `cloud-init` to setup our machines, see the configuration files in `./config`, we also provide a `prepare_net_cfg.sh` script that takes as a parameter the virtual bridge where the VMs will be connected to and modifies the IP prefix in the network configuration (given as a secord parameter) appropriately. (cite correctly, is this something Dimitris created or is it from AMD?) We can then run the following commands to setup normal guest:
+
+```bash
+sudo qemu-img convert kinetic-server-cloudimg-amd64.img nosev.img
+sudo qemu-img resize nosev.img +20G
+./prepare_net_cfg.sh -br virbr0 -cfg config/network-config-nosev.yml
+sudo cloud-localds -N ./config/network-config-nosev.yml cloud-config-nosev.iso config/cloud-config-nosev.yml
+```
+
+While to setup a SEV-SNP machine we need to run:
+
+```bash
+sudo qemu-img convert kinetic-server-cloudimg-amd64.img sev.img
+sudo qemu-img resize sev.img +20G 
+./prepare_net_cfg.sh -br virbr0 -cfg ./config/network-config-sev.yml
+sudo cloud-localds -N ./config/network-config-sev.yml cloud-config-sev.iso ./config/cloud-config-sev.yml
+mkdir OVMF_files
+cp ./usr/local/share/qemu/OVMF_CODE.fd ./OVMF_files/OVMF_CODE_sev.fd
+cp ./usr/local/share/qemu/OVMF_VARS.fd ./OVMF_files/OVMF_VARS_sev.fd
+```
+
+Now running the machines is simply a matter of launching them with the `./launch.sh` script provided, for the normal machine use:
+
+```bash
+sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./launch.sh \
+    -hda nosev.img \
+    -cdrom cloud-config-nosev.iso \
+    -bridge virbr0 
+```
+
+While to run the SEV-SNP machine use:
+
+```bash
+sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./launch.sh \
+    -hda sev.img \
+    -cdrom cloud-config-sev.iso \
+    -sev-snp \
+    -bridge virbr0 \
+    -bios ./OVMF_files/OVMF_CODE_sev.fd \
+    -bios-vars ./OVMF_files/OVMF_VARS_sev.fd
+```
+
+The launch script is configurable (memory, CPUs, etc), here is the configuration we are using:
+
+INSERT A TABLE TO REPRESENT THE MACHINES
+
+
+We can now verify that confidential computing features are enabled by running: `sudo dmesg | grep snp -i`
+
+
+It is now our interest to run some benchmarks to understand if and how this tecnhlogies impact the performance of machines, we will run 3 categories of micro-benchmarks: cpu-based benchmarks (compiling some popular open source projects and running the LZ4 compression and decompression algorithm), memory-related benchmarks (TinyMembench and MBW) and I/O related benchmarks (time to perform a number of insertions in a SQLite database and Redis Benchmark)
+
+
+SEV: 
+Godot game engine compilation: 431.024640083313 s    
+Image magick compilation: 79.58703064918518 s  
+Linux compilation (defconfig):  357.29826259613037 s   
+Llvm project compilation (ninja): 768.1812407970428 s  
+LZ4 compress ubuntu-22.04.2-desktop-amd64.iso: 5.118345260620117 s  
+LZ4 decompress ubuntu-22.04.2-desktop-amd64.iso: 5.205145359039307 s   
+SQlite 2500 insertions: 3.213946580886841 s   
+Mbw:
+
+```console
+ubuntu@sev:~/tinyben/results$ cat mbw-2023-06-19-10\:45\:04.txt 
+Long uses 8 bytes. Allocating 2*134217728 elements = 2147483648 bytes of memory.
+Using 262144 bytes as blocks for memcpy block copy test.
+Getting down to business... Doing 10 runs per test.
+0       Method: MEMCPY  Elapsed: 0.05773        MiB: 1024.00000 Copy: 17737.437 MiB/s
+1       Method: MEMCPY  Elapsed: 0.05566        MiB: 1024.00000 Copy: 18395.760 MiB/s
+2       Method: MEMCPY  Elapsed: 0.05549        MiB: 1024.00000 Copy: 18454.441 MiB/s
+3       Method: MEMCPY  Elapsed: 0.05550        MiB: 1024.00000 Copy: 18449.121 MiB/s
+4       Method: MEMCPY  Elapsed: 0.05543        MiB: 1024.00000 Copy: 18473.084 MiB/s
+5       Method: MEMCPY  Elapsed: 0.05539        MiB: 1024.00000 Copy: 18485.757 MiB/s
+6       Method: MEMCPY  Elapsed: 0.05536        MiB: 1024.00000 Copy: 18497.444 MiB/s
+7       Method: MEMCPY  Elapsed: 0.05540        MiB: 1024.00000 Copy: 18482.420 MiB/s
+8       Method: MEMCPY  Elapsed: 0.05534        MiB: 1024.00000 Copy: 18502.792 MiB/s
+9       Method: MEMCPY  Elapsed: 0.05538        MiB: 1024.00000 Copy: 18491.431 MiB/s
+AVG     Method: MEMCPY  Elapsed: 0.05567        MiB: 1024.00000 Copy: 18394.207 MiB/s
+0       Method: DUMB    Elapsed: 0.18966        MiB: 1024.00000 Copy: 5399.249 MiB/s
+1       Method: DUMB    Elapsed: 0.19006        MiB: 1024.00000 Copy: 5387.772 MiB/s
+2       Method: DUMB    Elapsed: 0.18986        MiB: 1024.00000 Copy: 5393.334 MiB/s
+3       Method: DUMB    Elapsed: 0.18994        MiB: 1024.00000 Copy: 5391.148 MiB/s
+4       Method: DUMB    Elapsed: 0.18986        MiB: 1024.00000 Copy: 5393.391 MiB/s
+5       Method: DUMB    Elapsed: 0.18989        MiB: 1024.00000 Copy: 5392.511 MiB/s
+6       Method: DUMB    Elapsed: 0.18990        MiB: 1024.00000 Copy: 5392.312 MiB/s
+7       Method: DUMB    Elapsed: 0.18987        MiB: 1024.00000 Copy: 5393.107 MiB/s
+8       Method: DUMB    Elapsed: 0.19024        MiB: 1024.00000 Copy: 5382.703 MiB/s
+9       Method: DUMB    Elapsed: 0.19001        MiB: 1024.00000 Copy: 5389.162 MiB/s
+AVG     Method: DUMB    Elapsed: 0.18993        MiB: 1024.00000 Copy: 5391.466 MiB/s
+0       Method: MCBLOCK Elapsed: 0.10515        MiB: 1024.00000 Copy: 9738.006 MiB/s
+1       Method: MCBLOCK Elapsed: 0.10370        MiB: 1024.00000 Copy: 9874.734 MiB/s
+2       Method: MCBLOCK Elapsed: 0.10215        MiB: 1024.00000 Copy: 10024.572 MiB/s
+3       Method: MCBLOCK Elapsed: 0.10209        MiB: 1024.00000 Copy: 10030.365 MiB/s
+4       Method: MCBLOCK Elapsed: 0.10399        MiB: 1024.00000 Copy: 9847.479 MiB/s
+5       Method: MCBLOCK Elapsed: 0.10286        MiB: 1024.00000 Copy: 9955.376 MiB/s
+6       Method: MCBLOCK Elapsed: 0.10206        MiB: 1024.00000 Copy: 10033.609 MiB/s
+7       Method: MCBLOCK Elapsed: 0.10209        MiB: 1024.00000 Copy: 10030.267 MiB/s
+8       Method: MCBLOCK Elapsed: 0.10206        MiB: 1024.00000 Copy: 10033.314 MiB/s
+9       Method: MCBLOCK Elapsed: 0.10198        MiB: 1024.00000 Copy: 10040.988 MiB/s
+AVG     Method: MCBLOCK Elapsed: 0.10281        MiB: 1024.00000 Copy: 9959.849 MiB/s
+```
+
+tinymembench
+
+```console
+tinymembench v0.4 (simple benchmark for memory throughput and latency)
+
+==========================================================================
+== Memory bandwidth tests                                               ==
+==                                                                      ==
+== Note 1: 1MB = 1000000 bytes                                          ==
+== Note 2: Results for 'copy' tests show how many bytes can be          ==
+==         copied per second (adding together read and writen           ==
+==         bytes would have provided twice higher numbers)              ==
+== Note 3: 2-pass copy means that we are using a small temporary buffer ==
+==         to first fetch data into it, and only then write it to the   ==
+==         destination (source -> L1 cache, L1 cache -> destination)    ==
+== Note 4: If sample standard deviation exceeds 0.1%, it is shown in    ==
+==         brackets                                                     ==
+==========================================================================
+
+ C copy backwards                                     :  14082.1 MB/s (0.4%)
+ C copy backwards (32 byte blocks)                    :  14093.8 MB/s (0.2%)
+ C copy backwards (64 byte blocks)                    :  14163.8 MB/s (0.4%)
+ C copy                                               :  14364.3 MB/s (0.2%)
+ C copy prefetched (32 bytes step)                    :  14794.5 MB/s (1.5%)
+ C copy prefetched (64 bytes step)                    :  14843.5 MB/s
+ C 2-pass copy                                        :  10503.8 MB/s (0.2%)
+ C 2-pass copy prefetched (32 bytes step)             :  11534.6 MB/s (0.2%)
+ C 2-pass copy prefetched (64 bytes step)             :  11407.7 MB/s (2.7%)
+ C fill                                               :  26776.2 MB/s (0.7%)
+ C fill (shuffle within 16 byte blocks)               :  26158.3 MB/s (1.0%)
+ C fill (shuffle within 32 byte blocks)               :  26656.7 MB/s
+ C fill (shuffle within 64 byte blocks)               :  25211.6 MB/s
+ ---
+ standard memcpy                                      :  23510.2 MB/s (0.2%)
+ standard memset                                      :  34614.6 MB/s (0.8%)
+ ---
+ MOVSB copy                                           :  16790.3 MB/s (0.8%)
+ MOVSD copy                                           :  16793.7 MB/s
+ SSE2 copy                                            :  17484.1 MB/s (3.6%)
+ SSE2 nontemporal copy                                :  22766.3 MB/s (2.3%)
+ SSE2 copy prefetched (32 bytes step)                 :  17116.7 MB/s (0.4%)
+ SSE2 copy prefetched (64 bytes step)                 :  17041.5 MB/s (1.2%)
+ SSE2 nontemporal copy prefetched (32 bytes step)     :  23362.6 MB/s (0.2%)
+ SSE2 nontemporal copy prefetched (64 bytes step)     :  23368.8 MB/s
+ SSE2 2-pass copy                                     :  13708.0 MB/s
+ SSE2 2-pass copy prefetched (32 bytes step)          :  13942.9 MB/s (4.8%)
+ SSE2 2-pass copy prefetched (64 bytes step)          :  13432.0 MB/s (2.3%)
+ SSE2 2-pass nontemporal copy                         :   3716.1 MB/s (1.2%)
+ SSE2 fill                                            :  30845.1 MB/s (1.3%)
+ SSE2 nontemporal fill                                :  25050.8 MB/s
+
+==========================================================================
+== Framebuffer read tests.                                              ==
+==                                                                      ==
+== Many ARM devices use a part of the system memory as the framebuffer, ==
+== typically mapped as uncached but with write-combining enabled.       ==
+== Writes to such framebuffers are quite fast, but reads are much       ==
+== slower and very sensitive to the alignment and the selection of      ==
+== CPU instructions which are used for accessing memory.                ==
+==                                                                      ==
+== Many x86 systems allocate the framebuffer in the GPU memory,         ==
+== accessible for the CPU via a relatively slow PCI-E bus. Moreover,    ==
+== PCI-E is asymmetric and handles reads a lot worse than writes.       ==
+==                                                                      ==
+== If uncached framebuffer reads are reasonably fast (at least 100 MB/s ==
+== or preferably >300 MB/s), then using the shadow framebuffer layer    ==
+== is not necessary in Xorg DDX drivers, resulting in a nice overall    ==
+== performance improvement. For example, the xf86-video-fbturbo DDX     ==
+== uses this trick.                                                     ==
+==========================================================================
+
+ MOVSD copy (from framebuffer)                        :    271.2 MB/s (0.4%)
+ MOVSD 2-pass copy (from framebuffer)                 :    258.5 MB/s (0.3%)
+ SSE2 copy (from framebuffer)                         :    137.8 MB/s (0.4%)
+ SSE2 2-pass copy (from framebuffer)                  :    137.7 MB/s (0.2%)
+
+==========================================================================
+== Memory latency test                                                  ==
+==                                                                      ==
+== Average time is measured for random memory accesses in the buffers   ==
+== of different sizes. The larger is the buffer, the more significant   ==
+== are relative contributions of TLB, L1/L2 cache misses and SDRAM      ==
+== accesses. For extremely large buffer sizes we are expecting to see   ==
+== page table walk with several requests to SDRAM for almost every      ==
+== memory access (though 64MiB is not nearly large enough to experience ==
+== this effect to its fullest).                                         ==
+==                                                                      ==
+== Note 1: All the numbers are representing extra time, which needs to  ==
+==         be added to L1 cache latency. The cycle timings for L1 cache ==
+==         latency can be usually found in the processor documentation. ==
+== Note 2: Dual random read means that we are simultaneously performing ==
+==         two independent memory accesses at a time. In the case if    ==
+==         the memory subsystem can't handle multiple outstanding       ==
+==         requests, dual random read has the same timings as two       ==
+==         single reads performed one after another.                    ==
+==========================================================================
+
+block size : single random read / dual random read, [MADV_NOHUGEPAGE]
+      1024 :    0.0 ns          /     0.0 ns 
+      2048 :    0.0 ns          /     0.0 ns 
+      4096 :    0.0 ns          /     0.0 ns 
+      8192 :    0.0 ns          /     0.0 ns 
+     16384 :    0.0 ns          /     0.0 ns 
+     32768 :    0.0 ns          /     0.0 ns 
+     65536 :    1.1 ns          /     1.6 ns 
+    131072 :    1.6 ns          /     2.0 ns 
+    262144 :    1.9 ns          /     2.2 ns 
+    524288 :    4.3 ns          /     5.6 ns 
+   1048576 :    8.7 ns          /    11.4 ns 
+   2097152 :   11.3 ns          /    13.7 ns 
+   4194304 :   12.8 ns          /    14.5 ns 
+   8388608 :   21.0 ns          /    26.0 ns 
+  16777216 :   29.1 ns          /    36.7 ns 
+  33554432 :   49.6 ns          /    66.8 ns 
+  67108864 :   87.8 ns          /   117.4 ns 
+
+block size : single random read / dual random read, [MADV_HUGEPAGE]
+      1024 :    0.0 ns          /     0.0 ns 
+      2048 :    0.0 ns          /     0.0 ns 
+      4096 :    0.0 ns          /     0.0 ns 
+      8192 :    0.0 ns          /     0.0 ns 
+     16384 :    0.0 ns          /     0.0 ns 
+     32768 :    0.0 ns          /     0.0 ns 
+     65536 :    1.1 ns          /     1.6 ns 
+    131072 :    1.6 ns          /     2.0 ns 
+    262144 :    1.9 ns          /     2.2 ns 
+    524288 :    2.3 ns          /     2.6 ns 
+   1048576 :    7.0 ns          /     9.6 ns 
+   2097152 :    9.3 ns          /    11.7 ns 
+   4194304 :   10.6 ns          /    12.4 ns 
+   8388608 :   11.1 ns          /    12.6 ns 
+  16777216 :   11.5 ns          /    12.8 ns 
+  33554432 :   13.1 ns          /    14.8 ns 
+  67108864 :   63.1 ns          /    86.5 ns 
+
+```
+
+redis:
+
+```console
+"test","rps","avg_latency_ms","min_latency_ms","p50_latency_ms","p95_latency_ms","p99_latency_ms","max_latency_ms"
+"PING_INLINE","102774.92","0.253","0.064","0.255","0.295","0.423","0.911"
+"PING_MBULK","104931.80","0.248","0.064","0.247","0.279","0.431","0.559"
+"SET","105485.23","0.247","0.064","0.247","0.279","0.431","0.559"
+"GET","105152.48","0.247","0.072","0.247","0.271","0.471","0.687"
+"INCR","105374.08","0.247","0.072","0.247","0.271","0.431","0.615"
+"LPUSH","105263.16","0.248","0.064","0.247","0.271","0.431","0.615"
+"RPUSH","105485.23","0.247","0.064","0.247","0.271","0.431","0.551"
+"LPOP","105152.48","0.248","0.056","0.247","0.271","0.431","0.647"
+"RPOP","107526.88","0.243","0.048","0.239","0.271","0.423","0.679"
+"SADD","108225.10","0.241","0.064","0.239","0.263","0.423","0.639"
+"HSET","105485.23","0.247","0.056","0.247","0.271","0.431","0.807"
+"SPOP","105263.16","0.247","0.072","0.247","0.279","0.431","0.567"
+"ZADD","106157.12","0.246","0.064","0.247","0.271","0.423","0.567"
+"ZPOPMIN","104931.80","0.248","0.064","0.247","0.287","0.463","0.799"
+"LPUSH (needed to benchmark LRANGE)","106157.12","0.245","0.064","0.247","0.271","0.423","0.759"
+"LRANGE_100 (first 100 elements)","70621.47","0.365","0.176","0.359","0.407","0.511","0.887"
+"LRANGE_300 (first 300 elements)","31515.91","0.798","0.288","0.799","0.895","0.959","1.831"
+"LRANGE_500 (first 500 elements)","22583.56","1.108","0.288","1.111","1.199","1.303","3.311"
+"LRANGE_600 (first 600 elements)","19208.61","1.297","0.280","1.287","1.455","1.559","3.439"
+"MSET (10 keys)","103092.78","0.271","0.072","0.263","0.399","0.503","0.855"
+```
+
+
+
+nosev
+
+                              ╷                  ╷                              
+  Benchmark Name              │ Benchmark Status │ Benchmark Result             
+ ═════════════════════════════╪══════════════════╪═════════════════════════════ 
+  Godot Game Enging           │        ✅        │ 396.8914442062378 s          
+  compilation                 │                  │                              
+  ImageMagick compilation     │        ✅        │ 68.88848686218262 s          
+  (gcc)                       │                  │                              
+  linux compilation           │        ✅        │ 319.93260073661804 s         
+  (defconfig)                 │                  │                              
+  llvm-project compilation    │        ✅        │ 737.0265719890594 s          
+  (ninja)                     │                  │                              
+  lz4 compress                │        ✅        │ 5.046428442001343 s          
+  ubuntu-22.04.2-desktop-amd… │                  │                              
+  lz4 decompress              │        ✅        │ 5.105153560638428 s          
+  ubuntu-22.04.2-desktop-amd… │                  │                              
+  raas/mbw 1024 MiB           │        ✅        │ results/mbw-2023-06-19-11:…  
+  redis-benchmark             │        ✅        │ results/redis-2023-06-19-1…  
+  sqlite 2500 insertions      │        ✅        │ 3.0814554691314697 s         
+  ssvb/tinymembench           │        ✅        │ results/tinymembench-2023-…  
+
+
+mbw
+
+```console
+Long uses 8 bytes. Allocating 2*134217728 elements = 2147483648 bytes of memory.
+Using 262144 bytes as blocks for memcpy block copy test.
+Getting down to business... Doing 10 runs per test.
+0	Method: MEMCPY	Elapsed: 0.05785	MiB: 1024.00000	Copy: 17702.175 MiB/s
+1	Method: MEMCPY	Elapsed: 0.05311	MiB: 1024.00000	Copy: 19280.012 MiB/s
+2	Method: MEMCPY	Elapsed: 0.05328	MiB: 1024.00000	Copy: 19218.498 MiB/s
+3	Method: MEMCPY	Elapsed: 0.05267	MiB: 1024.00000	Copy: 19443.284 MiB/s
+4	Method: MEMCPY	Elapsed: 0.05324	MiB: 1024.00000	Copy: 19234.381 MiB/s
+5	Method: MEMCPY	Elapsed: 0.05256	MiB: 1024.00000	Copy: 19483.608 MiB/s
+6	Method: MEMCPY	Elapsed: 0.05302	MiB: 1024.00000	Copy: 19314.559 MiB/s
+7	Method: MEMCPY	Elapsed: 0.05305	MiB: 1024.00000	Copy: 19304.000 MiB/s
+8	Method: MEMCPY	Elapsed: 0.05259	MiB: 1024.00000	Copy: 19472.863 MiB/s
+9	Method: MEMCPY	Elapsed: 0.05311	MiB: 1024.00000	Copy: 19279.649 MiB/s
+AVG	Method: MEMCPY	Elapsed: 0.05345	MiB: 1024.00000	Copy: 19159.418 MiB/s
+0	Method: DUMB	Elapsed: 0.19026	MiB: 1024.00000	Copy: 5381.996 MiB/s
+1	Method: DUMB	Elapsed: 0.19040	MiB: 1024.00000	Copy: 5378.067 MiB/s
+2	Method: DUMB	Elapsed: 0.19085	MiB: 1024.00000	Copy: 5365.583 MiB/s
+3	Method: DUMB	Elapsed: 0.19121	MiB: 1024.00000	Copy: 5355.368 MiB/s
+4	Method: DUMB	Elapsed: 0.19103	MiB: 1024.00000	Copy: 5360.443 MiB/s
+5	Method: DUMB	Elapsed: 0.19121	MiB: 1024.00000	Copy: 5355.256 MiB/s
+6	Method: DUMB	Elapsed: 0.19880	MiB: 1024.00000	Copy: 5150.983 MiB/s
+7	Method: DUMB	Elapsed: 0.19026	MiB: 1024.00000	Copy: 5382.137 MiB/s
+8	Method: DUMB	Elapsed: 0.19109	MiB: 1024.00000	Copy: 5358.816 MiB/s
+9	Method: DUMB	Elapsed: 0.19153	MiB: 1024.00000	Copy: 5346.561 MiB/s
+AVG	Method: DUMB	Elapsed: 0.19166	MiB: 1024.00000	Copy: 5342.700 MiB/s
+0	Method: MCBLOCK	Elapsed: 0.09681	MiB: 1024.00000	Copy: 10577.747 MiB/s
+1	Method: MCBLOCK	Elapsed: 0.09666	MiB: 1024.00000	Copy: 10593.724 MiB/s
+2	Method: MCBLOCK	Elapsed: 0.09625	MiB: 1024.00000	Copy: 10638.961 MiB/s
+3	Method: MCBLOCK	Elapsed: 0.09610	MiB: 1024.00000	Copy: 10655.234 MiB/s
+4	Method: MCBLOCK	Elapsed: 0.09625	MiB: 1024.00000	Copy: 10639.403 MiB/s
+5	Method: MCBLOCK	Elapsed: 0.09614	MiB: 1024.00000	Copy: 10651.466 MiB/s
+6	Method: MCBLOCK	Elapsed: 0.09628	MiB: 1024.00000	Copy: 10635.646 MiB/s
+7	Method: MCBLOCK	Elapsed: 0.09616	MiB: 1024.00000	Copy: 10648.586 MiB/s
+8	Method: MCBLOCK	Elapsed: 0.09613	MiB: 1024.00000	Copy: 10652.574 MiB/s
+9	Method: MCBLOCK	Elapsed: 0.09633	MiB: 1024.00000	Copy: 10630.457 MiB/s
+AVG	Method: MCBLOCK	Elapsed: 0.09631	MiB: 1024.00000	Copy: 10632.322 MiB/s
+```
+
+tinymembench
+
+```console
+tinymembench v0.4 (simple benchmark for memory throughput and latency)
+
+==========================================================================
+== Memory bandwidth tests                                               ==
+==                                                                      ==
+== Note 1: 1MB = 1000000 bytes                                          ==
+== Note 2: Results for 'copy' tests show how many bytes can be          ==
+==         copied per second (adding together read and writen           ==
+==         bytes would have provided twice higher numbers)              ==
+== Note 3: 2-pass copy means that we are using a small temporary buffer ==
+==         to first fetch data into it, and only then write it to the   ==
+==         destination (source -> L1 cache, L1 cache -> destination)    ==
+== Note 4: If sample standard deviation exceeds 0.1%, it is shown in    ==
+==         brackets                                                     ==
+==========================================================================
+
+ C copy backwards                                     :  14610.2 MB/s
+ C copy backwards (32 byte blocks)                    :  14817.3 MB/s (0.5%)
+ C copy backwards (64 byte blocks)                    :  14726.7 MB/s
+ C copy                                               :  15031.9 MB/s (0.2%)
+ C copy prefetched (32 bytes step)                    :  15505.4 MB/s
+ C copy prefetched (64 bytes step)                    :  15568.4 MB/s (0.3%)
+ C 2-pass copy                                        :  10950.8 MB/s
+ C 2-pass copy prefetched (32 bytes step)             :  11990.3 MB/s (0.3%)
+ C 2-pass copy prefetched (64 bytes step)             :  12065.0 MB/s
+ C fill                                               :  28662.8 MB/s (1.0%)
+ C fill (shuffle within 16 byte blocks)               :  28808.2 MB/s (0.7%)
+ C fill (shuffle within 32 byte blocks)               :  28385.5 MB/s (1.4%)
+ C fill (shuffle within 64 byte blocks)               :  26565.4 MB/s (0.6%)
+ ---
+ standard memcpy                                      :  23600.5 MB/s (0.2%)
+ standard memset                                      :  36158.3 MB/s (0.7%)
+ ---
+ MOVSB copy                                           :  17094.5 MB/s (0.6%)
+ MOVSD copy                                           :  16814.9 MB/s
+ SSE2 copy                                            :  17752.3 MB/s (4.1%)
+ SSE2 nontemporal copy                                :  23153.0 MB/s (1.6%)
+ SSE2 copy prefetched (32 bytes step)                 :  17620.8 MB/s (3.4%)
+ SSE2 copy prefetched (64 bytes step)                 :  17715.0 MB/s (0.5%)
+ SSE2 nontemporal copy prefetched (32 bytes step)     :  23173.5 MB/s
+ SSE2 nontemporal copy prefetched (64 bytes step)     :  23368.0 MB/s (0.5%)
+ SSE2 2-pass copy                                     :  14395.9 MB/s (0.8%)
+ SSE2 2-pass copy prefetched (32 bytes step)          :  14624.2 MB/s (0.4%)
+ SSE2 2-pass copy prefetched (64 bytes step)          :  14129.2 MB/s (0.4%)
+ SSE2 2-pass nontemporal copy                         :   3977.4 MB/s (1.9%)
+ SSE2 fill                                            :  32553.6 MB/s (6.4%)
+ SSE2 nontemporal fill                                :  25077.5 MB/s
+
+==========================================================================
+== Framebuffer read tests.                                              ==
+==                                                                      ==
+== Many ARM devices use a part of the system memory as the framebuffer, ==
+== typically mapped as uncached but with write-combining enabled.       ==
+== Writes to such framebuffers are quite fast, but reads are much       ==
+== slower and very sensitive to the alignment and the selection of      ==
+== CPU instructions which are used for accessing memory.                ==
+==                                                                      ==
+== Many x86 systems allocate the framebuffer in the GPU memory,         ==
+== accessible for the CPU via a relatively slow PCI-E bus. Moreover,    ==
+== PCI-E is asymmetric and handles reads a lot worse than writes.       ==
+==                                                                      ==
+== If uncached framebuffer reads are reasonably fast (at least 100 MB/s ==
+== or preferably >300 MB/s), then using the shadow framebuffer layer    ==
+== is not necessary in Xorg DDX drivers, resulting in a nice overall    ==
+== performance improvement. For example, the xf86-video-fbturbo DDX     ==
+== uses this trick.                                                     ==
+==========================================================================
+
+ MOVSD copy (from framebuffer)                        :    271.2 MB/s (0.4%)
+ MOVSD 2-pass copy (from framebuffer)                 :    258.9 MB/s (0.3%)
+ SSE2 copy (from framebuffer)                         :    138.0 MB/s (0.4%)
+ SSE2 2-pass copy (from framebuffer)                  :    137.9 MB/s
+
+==========================================================================
+== Memory latency test                                                  ==
+==                                                                      ==
+== Average time is measured for random memory accesses in the buffers   ==
+== of different sizes. The larger is the buffer, the more significant   ==
+== are relative contributions of TLB, L1/L2 cache misses and SDRAM      ==
+== accesses. For extremely large buffer sizes we are expecting to see   ==
+== page table walk with several requests to SDRAM for almost every      ==
+== memory access (though 64MiB is not nearly large enough to experience ==
+== this effect to its fullest).                                         ==
+==                                                                      ==
+== Note 1: All the numbers are representing extra time, which needs to  ==
+==         be added to L1 cache latency. The cycle timings for L1 cache ==
+==         latency can be usually found in the processor documentation. ==
+== Note 2: Dual random read means that we are simultaneously performing ==
+==         two independent memory accesses at a time. In the case if    ==
+==         the memory subsystem can't handle multiple outstanding       ==
+==         requests, dual random read has the same timings as two       ==
+==         single reads performed one after another.                    ==
+==========================================================================
+
+block size : single random read / dual random read, [MADV_NOHUGEPAGE]
+      1024 :    0.0 ns          /     0.0 ns 
+      2048 :    0.0 ns          /     0.0 ns 
+      4096 :    0.0 ns          /     0.0 ns 
+      8192 :    0.0 ns          /     0.0 ns 
+     16384 :    0.0 ns          /     0.0 ns 
+     32768 :    0.0 ns          /     0.0 ns 
+     65536 :    1.1 ns          /     1.6 ns 
+    131072 :    1.6 ns          /     2.0 ns 
+    262144 :    1.9 ns          /     2.2 ns 
+    524288 :    4.2 ns          /     5.4 ns 
+   1048576 :    8.7 ns          /    11.3 ns 
+   2097152 :   11.4 ns          /    13.7 ns 
+   4194304 :   12.6 ns          /    14.5 ns 
+   8388608 :   21.2 ns          /    27.8 ns 
+  16777216 :   31.1 ns          /    38.5 ns 
+  33554432 :   47.9 ns          /    63.7 ns 
+  67108864 :   83.9 ns          /   111.3 ns 
+
+block size : single random read / dual random read, [MADV_HUGEPAGE]
+      1024 :    0.0 ns          /     0.0 ns 
+      2048 :    0.0 ns          /     0.0 ns 
+      4096 :    0.0 ns          /     0.0 ns 
+      8192 :    0.0 ns          /     0.0 ns 
+     16384 :    0.0 ns          /     0.0 ns 
+     32768 :    0.0 ns          /     0.0 ns 
+     65536 :    1.1 ns          /     1.6 ns 
+    131072 :    1.6 ns          /     2.0 ns 
+    262144 :    1.9 ns          /     2.2 ns 
+    524288 :    2.3 ns          /     2.6 ns 
+   1048576 :    7.0 ns          /     9.6 ns 
+   2097152 :    9.3 ns          /    11.7 ns 
+   4194304 :   10.5 ns          /    12.4 ns 
+   8388608 :   11.1 ns          /    12.7 ns 
+  16777216 :   11.4 ns          /    12.8 ns 
+  33554432 :   12.8 ns          /    14.1 ns 
+  67108864 :   56.3 ns          /    83.8 ns 
+```
+
+redis
+
+```console
+"test","rps","avg_latency_ms","min_latency_ms","p50_latency_ms","p95_latency_ms","p99_latency_ms","max_latency_ms"
+"PING_INLINE","105374.08","0.246","0.072","0.247","0.271","0.407","0.935"
+"PING_MBULK","104384.13","0.248","0.064","0.247","0.271","0.423","0.559"
+"SET","107991.36","0.241","0.064","0.239","0.271","0.407","0.543"
+"GET","104493.20","0.248","0.072","0.247","0.263","0.415","0.623"
+"INCR","111234.70","0.234","0.064","0.231","0.263","0.399","0.543"
+"LPUSH","109289.62","0.238","0.064","0.239","0.263","0.431","0.727"
+"RPUSH","106496.27","0.244","0.064","0.239","0.263","0.423","0.575"
+"LPOP","104931.80","0.247","0.072","0.247","0.271","0.415","0.607"
+"RPOP","103842.16","0.250","0.072","0.247","0.279","0.415","0.719"
+"SADD","103412.62","0.250","0.072","0.247","0.271","0.415","0.551"
+"HSET","112107.62","0.233","0.064","0.231","0.255","0.391","0.551"
+"SPOP","107181.13","0.242","0.056","0.239","0.263","0.423","0.599"
+"ZADD","104275.29","0.249","0.072","0.247","0.271","0.423","0.647"
+"ZPOPMIN","103950.10","0.249","0.072","0.247","0.271","0.415","0.615"
+"LPUSH (needed to benchmark LRANGE)","104821.80","0.248","0.072","0.247","0.271","0.399","0.655"
+"LRANGE_100 (first 100 elements)","68306.01","0.374","0.192","0.375","0.407","0.495","0.775"
+"LRANGE_300 (first 300 elements)","30998.14","0.805","0.304","0.807","0.871","0.935","2.031"
+"LRANGE_500 (first 500 elements)","21640.34","1.145","0.272","1.151","1.223","1.327","3.119"
+"LRANGE_600 (first 600 elements)","18928.64","1.307","0.280","1.311","1.399","1.527","3.527"
+"MSET (10 keys)","105042.02","0.249","0.072","0.247","0.271","0.391","0.687"
 ```
 
 ### benchmarks
@@ -184,23 +673,17 @@ I guess this is because it is not supported,
 + AMD-ES enabled and disabeld?
 + Test different machines running at the same time
 + memory: Tinymembench, MBW
-+ cpu: compilation (linux llvm godot imagemagick) + LZ4 ~> This measures the compression and decompression time with LZ4 algorithm.
-+ I/O: SQLite ~> This measures the time to perform a pre-defined number of insertions to a SQLite database, Redis benchmark
-
-### AMD Secure Encrypted Virtualization-Secure Trusted I/O (SEV-TIO)
-
-
-### Sev on containers (kata)
-
-
-
 
 ## todo
 - set ovmf version
+- AMD Secure Encrypted Virtualization-Secure Trusted I/O (SEV-TIO)
+- SEV on containers (kata)
 - bios configuration
 - numa enabled/disabled
 - barplot with benchmark results (maybe split by category: memory, cpu, io use seaborn)
+
 ## References
++ https://manpages.debian.org/testing/cloud-image-utils/cloud-localds.1.en.html
 https://www.amd.com/system/files/documents/using-amd-secure-encrypted-virtualization-encrypted-state-on-think-system-servers.pdf
 - https://www.amd.com/system/files/TechDocs/memory-encryption-white-paper.pdf
 - https://www.amd.com/system/files/techdocs/sev-snp-strengthening-vm-isolation-with-integrity-protection-and-more.pdf
