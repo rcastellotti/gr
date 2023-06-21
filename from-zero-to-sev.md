@@ -320,4 +320,55 @@ CPUs (16) and 16G of memory.
 | Guest Kernel | 5.19.0-41-generic #42-Ubuntu SMP PREEMPT_DYNAMIC (Ubuntu 22.10 )             |
 
 
-#### Section 3.2 "BIOS Configurations"
+#### Section 3.2 "BIOS Configurations"\
+
+
+
+## investigating I/O related perfomance
+
+
++ QEMU emulated devices
++ QEMU virtio IOThread
++ QEMU userspace NVMe driver
++ SPDK vhost-user
++ vfio-pci device assignment
++ virtio-scsi
++ virtio-blk
++ vfio-pci
++ ahci
++ virtio-blk, w/ iothread, userspace driver
+
+benchmark they ran: fio randread bs=4k iodepth=1 numjobs=1
+
+
+First of all, what the heck is a block device?
+
+Block devices are characterized by random access to data organized in fixed-size blocks. Examples of such devices are hard drives, CD-ROM drives, RAM disks, etc. The speed of block devices is generally much higher than the speed of character devices, and their performance is also important.
+
+## Virtio
++ Virtio was chosen to be the main platform for IO virtualization in KVM
++ The idea behind it is to have a common framework for hypervisors for IO virtualization
+
+
+
+## virtio-scsi
+
+The virtio-scsi feature is a new para-virtualized SCSI controller device. It is the foundation of an alternative storage implementation for KVM Virtualization’s storage stack replacing__ virtio-blk__ and improving upon its capabilities. It provides the same performance as virtio-blk, and adds the following immediate benefits:
+
++ __Improved scalability__ virtual machines can connect to more storage devices (the virtio-scsi can handle multiple block devices per virtual SCSI adapter).
++ __Standard command set__ virtio-scsi uses standard SCSI command sets, simplifying new feature addition.
++ __Standard device naming__ virtio-scsi disks use the same paths as a bare-metal system. This simplifies physical-to-virtual and virtual-to-virtual migration.
++ __SCSI device passthrough__ virtio-scsi can present physical storage devices directly to guests.
+Virtio-SCSI provides the ability to connect directly to SCSI LUNs and significantly improves scalability compared to virtio-blk. The advantage of virtio-SCSI is that it is capable of handling hundreds of devices compared to virtio-blk which can only handle approximately 30 devices and exhausts PCI slots.
+
+Designed to replace virtio-blk, virtio-scsi retains virtio-blk’s performance advantages while improving storage scalability, allowing access to multiple storage devices through a single controller, and enabling reuse of the guest operating system’s SCSI stack.
+
+
+
+
+
+https://www.linux-kvm.org/page/Virtio
+https://www.ovirt.org/develop/release-management/features/storage/virtio-scsi.html
+https://www.qemu.org/2021/01/19/virtio-blk-scsi-configuration/
+https://projectacrn.github.io/latest/developer-guides/hld/virtio-blk.html
+https://linux-kernel-labs.github.io/refs/heads/master/labs/block_device_drivers.html
