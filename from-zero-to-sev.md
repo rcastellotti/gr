@@ -412,7 +412,8 @@ QEMU virtio IOThread: QEMU provides an IOThread option for virtio devices, such 
 
 QEMU userspace NVMe driver: QEMU includes a userspace NVMe driver that enables virtual machines to interact with NVMe (Non-Volatile Memory Express) storage devices. This driver allows for efficient I/O operations and high-performance access to NVMe devices from within the virtual machine.
 
-
+# I/O testing
+Test with SEV-SNP enabled, I still need to provide commands
 Test with both raw images and qcow2?
 
 default:
