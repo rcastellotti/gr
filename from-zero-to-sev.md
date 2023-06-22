@@ -452,6 +452,7 @@ qemu-img create -f qcow2 blk.img 10G
 ```
 
 virtio-scsi:
+
 ```bash
 qemu-img create -f qcow2 scsi.img 10G
 
@@ -463,4 +464,17 @@ qemu-img create -f qcow2 scsi.img 10G
      -device virtio-scsi-pci,id=scsi \
      -device scsi-hd,drive=hd \
      -drive if=none,id=hd,file=scsi.img,format=raw
+```
+
+```bash
+fio --name=mytest \ 
+--filename=/dev/sdX 
+--direct=1 \ # also test with directt=0 
+--rw=randread 
+--bs=4k \ # tweak this value across different runs
+--numjobs=1 \ # tweak this value
+--size=1G \ # tweak this value
+--time_based \ 
+--runtime=60 \  
+--group_reporting
 ```
