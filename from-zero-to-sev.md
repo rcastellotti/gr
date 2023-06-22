@@ -330,7 +330,6 @@ CPUs (16) and 16G of memory.
 + QEMU emulated devices
 + QEMU virtio IOThread
 + QEMU userspace NVMe driver
-+ SPDK vhost-user
 + vfio-pci device assignment
 + virtio-scsi
 + virtio-blk
@@ -348,6 +347,10 @@ Block devices are characterized by random access to data organized in fixed-size
 ## Virtio
 + Virtio was chosen to be the main platform for IO virtualization in KVM
 + The idea behind it is to have a common framework for hypervisors for IO virtualization
+
+
+## virtio-blk
+The virtio-blk device is a simple virtual block device. The FE driver (in the User VM space) places read, write, and other requests onto the virtqueue, so that the BE driver (in the Service VM space) can process them accordingly. Communication between the FE and BE is based on the virtio kick and notify mechanism.
 
 
 
@@ -372,3 +375,92 @@ https://www.ovirt.org/develop/release-management/features/storage/virtio-scsi.ht
 https://www.qemu.org/2021/01/19/virtio-blk-scsi-configuration/
 https://projectacrn.github.io/latest/developer-guides/hld/virtio-blk.html
 https://linux-kernel-labs.github.io/refs/heads/master/labs/block_device_drivers.html
+https://qemu-project.gitlab.io/qemu/system/devices/nvme.html
+https://www.qemu.org/2020/09/14/qemu-storage-overview/
+
+
+
+We divide 
+
+● Emulation (Full Virtualization)
+○ Best option for correctness and abstraction
+○ High performance cost
+● Paravirtualization
+○ Optimize driver and virtual device interaction
+○ Guest is “aware” of virtualization
+● Pass-Through Mode
+○ Best option for performance
+○ Strong coupling with hardware
+
+https://compas.cs.stonybrook.edu/~nhonarmand/courses/sp17/cse506/slides/io_virtualization.pdf
+
+
+virtio-blk with iothread and userspace driver: By offloading I/O processing to a separate thread and utilizing a userspace driver, you can achieve enhanced performance and efficiency for disk operations in the virtual machine.
+
+ahci: AHCI (Advanced Host Controller Interface) is an interface specification for SATA (Serial ATA) host controllers. QEMU can emulate AHCI controllers to provide SATA disk support for virtual machines.
+
+virtio-blk: virtio-blk is another virtualization standard that provides a disk interface for virtual machines. It allows the virtual machine to communicate with virtual disks using the virtio framework, providing good performance and flexibility.
+
+virtio-scsi: virtio-scsi is a virtualization standard that provides a high-performance, lightweight, and efficient interface for storage devices in virtual machines. It allows virtual machines to directly communicate with SCSI devices using the virtio framework.
+
+
+vfio-pci device assignment: VFIO (Virtual Function I/O) is a framework that allows direct device assignment to virtual machines. VFIO enables bypassing the QEMU emulation layer and providing direct access to the hardware for improved performance and compatibility. VFIO can be used with devices like GPUs, network adapters, and storage controllers.
+
+QEMU emulated devices: QEMU provides emulation for a wide range of devices, including network devices (e.g., Intel e1000, virtio-net), storage devices (e.g., IDE, SCSI), graphics devices (e.g., VGA, QXL), sound devices, input devices (e.g., keyboard, mouse), and more. These emulated devices allow virtual machines to interact with virtualized hardware.
+
+QEMU virtio IOThread: QEMU provides an IOThread option for virtio devices, such as virtio-net (network) and virtio-scsi (storage). IOThread allows offloading the device I/O processing to a separate thread, improving performance by leveraging multiple CPU cores.
+
+QEMU userspace NVMe driver: QEMU includes a userspace NVMe driver that enables virtual machines to interact with NVMe (Non-Volatile Memory Express) storage devices. This driver allows for efficient I/O operations and high-performance access to NVMe devices from within the virtual machine.
+
+
+Test with both raw images and qcow2?
+
+default:
+
+```bash
+./usr/local/bin/qemu-system-x86_64 \
+  -drive file=./nosev-disks.img,format=raw \
+  -cdrom cloud-config-nosev.iso \
+  --nographic
+```
+
+nvme:
+
+```bash
+qemu-img create -f qcow2 nvm.img 10G
+
+./usr/local/bin/qemu-system-x86_64 \
+  -drive file=./nosev-disks.img,format=raw \
+  -cdrom cloud-config-nosev.iso \
+  -m 2G \
+  -drive file=nvm.img,if=none,id=nvm \
+  -device nvme,serial=deadbeef,drive=nvm \
+  --nographic
+```
+
+virtio-blk:
+
+```bash
+qemu-img create -f qcow2 blk.img 10G
+
+./usr/local/bin/qemu-system-x86_64 \
+  -drive file=./nosev-disks.img,format=raw \
+  -cdrom cloud-config-nosev.iso \
+  -device virtio-blk-pci,drive=drive0,id=virtblk0,num-queues=4 \
+  -drive file=blk.img,if=none,id=drive0 \
+  --nographic
+```
+
+virtio-scsi:
+```bash
+qemu-img create -f qcow2 scsi.img 10G
+
+./usr/local/bin/qemu-system-x86_64 \
+     -nographic \
+     -m 2G \
+     -drive file=./nosev-disks.img,format=raw \
+     -cdrom cloud-config-nosev.iso \
+     -device virtio-scsi-pci,id=scsi \
+     -device scsi-hd,drive=hd \
+     -drive if=none,id=hd,file=scsi.img,format=raw
+```
