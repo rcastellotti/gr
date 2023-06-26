@@ -1,13 +1,11 @@
 import subprocess
 
-
-def run_fio_test(name, machine, filename, direct, iodepth, rw, bs, numjobs, output):
-    name = f"{machine}-{rw}-direct-{direct}-{bs}-{numjobs}-{iodepth}"
+def run_fio_test(machine, filename, iodepth, rw, bs, numjobs):
+    name = f"{machine}-{rw}-{bs}-{numjobs}-{iodepth}"
     command = [
         "fio",
         "--name=" + name,
         "--filename=" + filename,
-        "--direct=" + str(direct),
         "--iodepth=" + str(iodepth),
         "--rw=" + rw,
         "--bs=" + bs,
@@ -21,30 +19,15 @@ def run_fio_test(name, machine, filename, direct, iodepth, rw, bs, numjobs, outp
 
 # Test configurations
 tests = [
-    {
-        "direct": 1,
-        "filename": "/dev/nvme0n1",
-        "iodepth": 128,
-        "rw": "randread",
-        "bs": "4k",
-        "numjobs": 4,
-    },
+    {"iodepth": 128,"rw": "randread","bs": "4k","numjobs": 4},
+    {"iodepth": 128,"rw": "randwrite","bs": "4k","numjobs": 4},
+    {"iodepth": 128,"rw": "read","bs": "128k","numjobs": 4},
+    {"iodepth": 128,"rw": "write","bs": "128k","numjobs": 4},   
+    {"iodepth": 1,"rw": "randread","bs": "4k","numjobs": 4},
+    {"iodepth": 1,"rw": "randwrite","bs": "4k","numjobs": 4,},
+    {"iodepth": 1,"rw": "read","bs": "4k","numjobs": 1},
+    {"iodepth": 1,"rw": "write","bs": "4k","numjobs": 1},
 ]
 
-# Execute the tests
 for test in tests:
-    run_fio_test(machine="baremetal", **test)
-
-
-# Case name (bs,rw,numjobs,iodepth)
-
-# randread-4k-4-128 (4k,randread, 4,128)
-
-# randwrite-4k-4-128 (4k,ranwrite, 4,128)
-# seqread-128k-4-128 (128k,read,4,128)
-# seqwrite-128k-4-128 (128k,write,4,128)
-
-# randread-4k-1-1 (4k,randread,1,1)
-# randwrite-4k-1-1 (4k,randwrite,1,1)
-# seqread-4k-1-1 (4k,read,1,1)
-# seqwrite-4k-1-1 (4k,write,1,1)
+    run_fio_test(**test, machine="baremetal", filename="/dev/nvme0n1")
