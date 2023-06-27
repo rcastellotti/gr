@@ -333,6 +333,27 @@ UEFI_BIOS_VARS="./${GUEST_NAME}.fd"
 add_opts "-drive if=pflash,format=raw,unit=0,file=${UEFI_BIOS_CODE},readonly=on"
 add_opts "-drive if=pflash,format=raw,unit=1,file=${UEFI_BIOS_VARS}"
 
+
+## stuff for I/O testing
+##nvme:
+## qemu-img create -f qcow2 nvm.img 10G
+# add_opts "-drive file=nvm.img,if=none,id=nvm"
+# add_opts "-device nvme,serial=deadbeef,drive=nvm"
+
+## virtio-blk:
+## qemu-img create -f qcow2 blk.img 10G
+# add_opts "-device virtio-blk-pci,drive=drive0,id=virtblk0,num-queues=4"
+# add_opts "-drive file=blk.img,if=none,id=drive0"
+
+## virtio-scsi:
+## qemu-img create -f qcow2 scsi.img 10G
+# add_opts "-device virtio-scsi-pci,id=scsi"
+# add_opts "-device scsi-hd,drive=hd"
+# add_opts "-drive if=none,id=hd,file=scsi.img"
+
+## end stuff for I/O testing
+
+
 [ -n "$BIOS_DEBUG" ] && {
 	add_opts "-chardev file,id=bios,path=./bios.log"
 	add_opts "-device isa-debugcon,iobase=0x402,chardev=bios"
