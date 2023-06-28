@@ -61,3 +61,19 @@ sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./sev.sh
 - [OVMF](https://github.com/AMDESE/ovmf) provided by AMD
 
 
+```
+## qemu-img create -f qcow2 nvm.img 10G
+# -drive file=nvm.img,if=none,id=nvm \
+# -device nvme,serial=deadbeef,drive=nvm
+
+## virtio-blk:
+## qemu-img create -f qcow2 blk.img 10G
+# -device virtio-blk-pci,drive=drive0,id=virtblk0,num-queues=4
+# -drive file=blk.img,if=none,id=drive0
+
+## virtio-scsi:
+## qemu-img create -f qcow2 scsi.img 10G
+-device virtio-scsi-pci,id=scsi
+-device scsi-hd,drive=hd
+-drive if=none,id=hd,file=scsi.img
+```
