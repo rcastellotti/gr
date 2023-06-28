@@ -1,10 +1,12 @@
 with import <nixpkgs> { };
 let
-  libraries = [ pixman zlib zstd glib libpng snappy libuuid ];
+  libraries = [ libslirp pixman zlib zstd glib libpng snappy libuuid ];
 in
 mkShell {
   buildInputs = libraries;
   nativeBuildInputs = [
+    # needed to compile qemu with user network support
+    ninja
     # needed to build ovmf
     pkg-config
     nasm
@@ -12,7 +14,7 @@ mkShell {
     # needed for the first demo
     gdb
     # needed to run cpuid
-    msr-tools
+    cpuid
   ];
   LD_LIBRARY_PATH = lib.makeLibraryPath libraries;
 }
