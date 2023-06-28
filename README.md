@@ -17,27 +17,24 @@ Compile the custom OVMF and QEMU provided by AMD:
 ## Prepare a NOSEV guest
 
 ```bash
-sudo qemu-img convert kinetic-server-cloudimg-amd64.img nosev.img
-sudo qemu-img resize nosev.img +20G
-./prepare_net_cfg.sh -br virbr0 -cfg config/network-config-nosev.yml
-sudo cloud-localds -N ./config/network-config-nosev.yml cloud-config-nosev.iso config/cloud-config-nosev.yml
+qemu-img convert kinetic-server-cloudimg-amd64.img nosev.img
+qemu-img resize nosev.img +20G
+sudo cloud-localds cloud-config-nosev.iso config/cloud-config-nosev.yml
+cp ./usr/local/share/qemu/OVMF_CODE.fd ./OVMF_files/OVMF_CODE_nosev.fd
+cp ./usr/local/share/qemu/OVMF_VARS.fd ./OVMF_files/OVMF_VARS_nosev.fd
 ```
 ## Launch a NOSEV guest. 
 
 ```bash
-sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./launch.sh \
-    -hda nosev.img \
-    -cdrom cloud-config-nosev.iso \
-    -bridge virbr0 
+sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./nosev.sh
 ```
 
 ## Prepare an AMD SEV-SNP guest.
 
 ```bash
-sudo qemu-img convert kinetic-server-cloudimg-amd64.img sev.img
-sudo qemu-img resize sev.img +20G 
-./prepare_net_cfg.sh -br virbr0 -cfg ./config/network-config-sev.yml
-sudo cloud-localds -N ./config/network-config-sev.yml cloud-config-sev.iso ./config/cloud-config-sev.yml
+qemu-img convert kinetic-server-cloudimg-amd64.img sev.img
+qemu-img resize sev.img +20G 
+sudo cloud-localds cloud-config-sev.iso ./config/cloud-config-sev.yml
 mkdir OVMF_files
 cp ./usr/local/share/qemu/OVMF_CODE.fd ./OVMF_files/OVMF_CODE_sev.fd
 cp ./usr/local/share/qemu/OVMF_VARS.fd ./OVMF_files/OVMF_VARS_sev.fd
@@ -46,21 +43,15 @@ cp ./usr/local/share/qemu/OVMF_VARS.fd ./OVMF_files/OVMF_VARS_sev.fd
 ## Launch an AMD SEV-SNP guest. 
 
 ```bash
-sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./launch.sh \
-    -hda sev.img \
-    -cdrom cloud-config-sev.iso \
-    -sev-snp \
-    -bridge virbr0 \
-    -bios ./OVMF_files/OVMF_CODE_sev.fd \
-    -bios-vars ./OVMF_files/OVMF_VARS_sev.fd
+sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./sev.sh
 ```
 
 ## Inside the guest VM, verify that AMD SEV-SNP is enabled:
 `sudo dmesg | grep snp -i ` should indicate `Memory Encryption Features active: AMD SEV SEV-ES SEV-SNP`
 
 ## Interact with the machines
-- SEV machine: connect using ssh `ubuntu@192.168.122.48`
-- NOSEV machine: connect using ssh `ubuntu@192.168.122.49`
+- SEV machine: connect using ssh `ssh -p 2222 ubuntu@localhost`
+- NOSEV machine: connect using ssh `ssh -p 2223 ubuntu@localhost`
 
 ### Useful links
 - Sample cloud-config and network-config for cloud-init can be found [here](https://gist.github.com/itzg/2577205f2036f787a2bd876ae458e18e).
