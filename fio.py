@@ -8,6 +8,7 @@ def run_fio_test(machine, filename, iodepth, rw, bs, numjobs):
         "--filename=" + filename,
         "--iodepth=" + str(iodepth),
         "--rw=" + rw,
+        "--size=1G",
         "--bs=" + bs,
         "--numjobs=" + str(numjobs),
         "--runtime=30",
@@ -30,4 +31,4 @@ tests = [
 ]
 
 for test in tests:
-    run_fio_test(**test, machine="baremetal", filename="/dev/nvme0n1")
+    run_fio_test(**test, machine="baremetal", filename="/mnt/a")
