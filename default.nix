@@ -15,6 +15,8 @@ mkShell {
     gdb
     # needed to run cpuid
     cpuid
+    jupyter
+    python310Packages.seaborn
   ];
   LD_LIBRARY_PATH = lib.makeLibraryPath libraries;
 }

@@ -67,10 +67,16 @@ sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./sev.sh
 # -drive file=nvm.img,if=none,id=nvm \
 # -device nvme,serial=deadbeef,drive=nvm
 
+
+
+
 ## virtio-blk:
 ## qemu-img create -f qcow2 blk.img 10G
 # -device virtio-blk-pci,drive=drive0,id=virtblk0,num-queues=4
 # -drive file=blk.img,if=none,id=drive0
+
+
+
 
 ## virtio-scsi:
 ## qemu-img create -f qcow2 scsi.img 10G
@@ -78,3 +84,5 @@ sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./sev.sh
 -device scsi-hd,drive=hd
 -drive if=none,id=hd,file=scsi.img
 ```
+
+transfer benchmarks: scp -P 2223 ubuntu@localhost:*.json io-benchmarks/
