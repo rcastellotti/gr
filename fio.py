@@ -13,7 +13,22 @@ def run_fio_test(machine, filename, iodepth, rw, bs, numjobs):
         "--numjobs=" + str(numjobs),
         "--runtime=30",
         "--output-format=json",
-        "--output=" + name + ".json",
+        "--direct",
+        "--output=" + "direct-"+name + ".json",
+    ]
+    subprocess.run(command)
+    command = [
+        "fio",
+        "--name=" + name,
+        "--filename=" + filename,
+        "--iodepth=" + str(iodepth),
+        "--rw=" + rw,
+        "--size=1G",
+        "--bs=" + bs,
+        "--numjobs=" + str(numjobs),
+        "--runtime=30",
+        "--output-format=json",
+        "--output="+name + ".json",
     ]
     subprocess.run(command)
 
