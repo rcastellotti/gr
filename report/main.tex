@@ -1,0 +1,474 @@
+\documentclass[letterpaper,twocolumn,10pt]{article}
+\usepackage{usenix-2020-09}
+
+\newcommand{\titlename}{
+Intel TDX Performance Evaluation Report \\ (Preliminary Version)
+}
+
+\newcommand{\authorname}{}
+
+\usepackage[english]{babel}
+\usepackage[backend=biber]{biblatex}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage{multicol}
+%\usepackage{flushend}
+%\usepackage[hyphens]{url}
+\PassOptionsToPackage{hyphens}{url}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    allcolors=blue,
+    breaklinks=true,
+    bookmarksnumbered=true,
+    bookmarkstype=toc,
+    bookmarksopen=true,
+    hidelinks,
+    pdftitle={\titlename},
+    pdfauthor={\authorname},
+    pdfstartview={FitH -32768}
+}
+
+% line breaks for long urls in references
+% \def\UrlBreaks{\do\/\do-\do}
+
+% suppress hyphenation
+\hyphenpenalty=1000\relax
+\exhyphenpenalty=1000\relax
+\sloppy
+
+% font
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{libertine}
+\usepackage{libertinust1math}
+\usepackage{inconsolata}
+
+% lsting
+\usepackage{xcolor}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+}
+\lstset{style=mystyle}
+
+%\titleformat{\paragraph}[runin]{\vspace{-2pt}\bf}{}{}{\periodafter}
+\newcommand{\myparagraph}{\paragraph}
+\newcommand{\MP}[1]{\textcolor{red}{#1}}
+\newcommand{\grumbler}[2]{\MP{{\bf #1}: #2}}
+\newcommand{\note}[1]{\grumbler{NOTE}{#1}}
+
+% bibtex
+\setcounter{biburllcpenalty}{7000}
+\setcounter{biburlucpenalty}{8000}
+\bibliography{reference}
+
+% watermark
+\usepackage{draftwatermark}
+\SetWatermarkColor[gray]{0.9}
+% \SetWatermarkText{Draft}
+
+%-------------------------------------------------------------------------------
+\begin{document}
+%-------------------------------------------------------------------------------
+
+%don't want date printed
+\date{}
+
+% make title bold and 14 pt font (Latex default is non-bold, 16 pt)
+\title{\Large \bf \titlename}
+
+%for single author (just remove % characters)
+\author{
+{\rm Masanori Misono}\\
+TU Munich
+%\and
+%{\rm Second Name}\\
+%Second Institution
+% copy the following lines to add more authors
+% \and
+% {\rm Name}\\
+%Name Institution
+} % end author
+
+\maketitle
+
+\begin{abstract}
+We report a preliminary performance evaluation of Intel TDX (Trusted Domain Extension)~\cite{tdx} on a Linux system.
+\end{abstract}
+
+\section{Environment}
+
+We use Intel DevCloud with Sapphire Rapids CPUs as the host machine and tdx-tools-2023ww01.rdc as the software stack.
+\autoref{tab:experiment-environment} shows the detailed environment.
+We use QEMU/KVM as a hypervisor.
+We assign the guest the same amount of CPUs and about 90\% of the host memory.
+We do not pin vCPU threads.
+We disable vNUMA in the guest and boot a TDX VM with Direct Boot.
+The guest uses kvmclock when TDX is disabled.
+TDX VM does not use kvmclock as the guest cannot trust the host, but the TDX module provides reliable TSC~\cite{tdx_secure_spec}.
+
+\begin{table*}[t]
+\centering
+\caption{Experiment environment}
+\label{tab:experiment-environment}
+\begin{tabular}{l|l}
+\toprule
+    Host CPU      & Intel(R) Xeon(R) Platinum 8480CTDX at 2.0GHz, 56 cores $\times$ 2 (Hyperthreading disabled) \\
+    Host Memory   & Samsung DDR5 4800 MT/s 64 GB $\times$ 16 (1024GB) \\
+    Host Config   & Automatic numa balancing disabled; Side channel mitigation default (enabled) \\
+    Host Kernel   & 5.19.0-tdx.v2.4.mvp17.el8 (Ubuntu 22.04) \\
+    Host TSC Frequency & 2000MHz \\
+    QEMU          & 7.0-v1.3 (patched) \\
+\midrule
+    OVMF          & Stable 202211 (patched) \\
+    Guest vCPU    & 112 \\
+    Guest Memory  & 896GB  \\
+    Guest Kernel  & 5.19.0-mvp15v2+4-generic (Ubuntu 22.04) \\
+    Guest Config  & No vNUMA; Side channel mitigation default (enabled) \\
+    TDX TSC Frequency & 1000MHz \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\autoref{tab:experiment-variants} shows the variants of the experiment configurations.
+\note{
+We accidentally assign 113 vCPUs to the TDX VM (``vm:tdx'').
+This may affect the performance of the TDX VM, especially for CPU-intensive applications (compilation and NPB in \autoref{sec:app:benchmark}).
+Here we present the results just for reference purposes.
+}
+
+\begin{table*}[t]
+\centering
+\caption{Experiment variants}
+\label{tab:experiment-variants}
+\begin{tabular}{l|l|l|l|l|l|l}
+\toprule
+           & \multicolumn{3}{|c|}{Host} & Guest & & \\
+             \cline{2-5}
+    Name   & TME & TME Bypass & TDX  & TDX   & Overhead$^{*}$   & Note    \\
+\midrule
+    bare                 &            &            &            & N/A        &       & Baremetal \\
+    bare:tme             & \checkmark &            &            & N/A        & m     & Baremetal w/ total memory encryption (TME) \\
+    bare:tme:bypass      & \checkmark & \checkmark &            & N/A        &       & Baremetal w/ TME bypass (no encryption in the host) \\
+    (bare:tdx)$^{\dagger}$            & \checkmark &            & \checkmark & N/A        & m     & Baremetal w/ TDX enabled in BIOS              \\
+    (bare:tdx:bypass)    & \checkmark & \checkmark & \checkmark & N/A        &       & Baremetal w/ TDX, TME bypass enabled in BIOS  \\
+    vm:bare              &            &            &            & N/A        & v     & Non TDX VM on ``bare''       \\
+    (vm:bare:tme)        & \checkmark &            &            & N/A        & v,m   & Non TDX VM on ``bare:tme'' \\
+    (vm:bare:tme:bypass) & \checkmark & \checkmark &            & N/A        & v     & Non TDX VM on ``bare:tme:bypass'' \\
+    vm:notdx             & \checkmark &            & \checkmark &            & v,m   & Non TDX VM on ``bare:tdx''         \\
+    vm:notdx:bypass      & \checkmark & \checkmark & \checkmark &            & v     & Non TDX VM on ``bare:tdx:bypass'   \\
+    vm:tdx               & \checkmark &            & \checkmark & \checkmark & v,m,t & TDX VM on ``bare:tdx''             \\
+    (vm:tdx:bypass)      & \checkmark & \checkmark & \checkmark & \checkmark & v,m,t & TDX VM on ``bare:tdx:bypass''      \\
+\bottomrule
+\multicolumn{7}{l}{$^{*}$ ``m'': encrypted memory. ``v'': virtual machine. ``t'': TDX. Expected as having the same performance if ``Overhead'' are the same.} \\
+\multicolumn{7}{l}{$^{\dagger}$ () means (some of) evaluation is missing.} \\
+\end{tabular}
+\end{table*}
+
+\section{Micro Benchmarks}
+\subsection{CPUID latency}
+cpuid instruction causes VMEXIT.
+In TDX VM, the TDX module provides a fast and trusted path to handle cpuid instruction.
+If the TDX module cannot handle the cpuid instruction, it falls back to the slow path; first, a \#VE is generated, and then the guest may consult the hypervisor to handle the instruction.
+In that case, TDX VM cannot trust values from the hypervisor~\cite{tdx_secure_spec}.
+
+We measure the latency of cpuid instruction to see the basic overhead of the TDX module and \#VE.
+We measure the latency of cpuid instruction with different leaves.
+\autoref{tab:cpuid} shows the leafs we used.
+We measure the latency of cpuid instruction 10000 times with rdtsc instruction and then calculate the elapsed time.
+\autoref{fig:cpuid-latency} shows the distribution of the latency.
+Also, \autoref{tab:cpuid_0x0}, \autoref{tab:cpuid_0x2}, \autoref{tab:cpuid_0x15}, \autoref{tab:cpuid_0x16} shows the detailed values of the latency.
+
+We observe the followings from the results.
+\begin{itemize}
+\item There are three groups: (1) bare, bare:tme, bare:tme\_bypass (baremetals), (2) vm:bare, vm:notdx, vm:notdx\_bypass (normal VMs), (3) vm:tdx, vm:tdx\_bypass (TDX VMs). Some lines are overlapped due to little differences.
+\item TDX VM takes longer to execute cpuid than the normal VMs even if it takes a faster path, and \#VE increases the latency by more than 2us. Also, there is high variation in the TDX VM. This indicates detecting TDX in user space is easy.
+
+\item For cpuid leaf 0x15 and 0x16, normal VMs have a faster latency than the baremetal. One possibility is we miscalculated the TSC frequency of the guest VM. Further investigation is needed.
+\end{itemize}
+
+
+\begin{table}
+\centering
+\caption{cpuid leaf information}
+\label{tab:cpuid}
+\begin{tabular}{lll}
+\toprule
+leaf &  description & \#VE in TDX \\
+\midrule
+0x0  & vendor info & \\
+0x2  & cache info  & \checkmark \\
+0x15 & TSC info (trusted)   & \\
+0x16 & TSC info    & \checkmark \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=1.0\textwidth]{./experiment/cpuid/cpuid_time.pdf}
+% \includegraphics[width=1.0\textwidth]{./experiment/cpuid/cpuid_time_box.pdf}
+\caption{CPUID latency distribution}
+\label{fig:cpuid-latency}
+\end{figure*}
+
+\begin{table}
+\centering
+\caption{cpuid latency leaf: 0x0 (time: us)}
+\label{tab:cpuid_0x0}
+\begin{tabular}{lrrrr}
+\toprule
+{} &  50\% &  95\% &  99\% &   max \\
+\midrule
+bare            & 0.05 & 0.05 & 0.05 &  0.09 \\
+bare:tme        & 0.04 & 0.05 & 0.05 &  0.09 \\
+bare:tme:bypass & 0.04 & 0.05 & 0.05 &  6.06 \\
+vm:bare         & 0.61 & 0.62 & 0.62 & 27.94 \\
+vm:notdx        & 0.62 & 0.62 & 0.64 &  7.83 \\
+vm:notdx:bypass & 0.62 & 0.62 & 0.63 &  4.11 \\
+vm:tdx          & 1.45 & 1.46 & 1.47 & 31.95 \\
+vm:tdx:bypass   & 1.49 & 1.62 & 1.63 & 29.64 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}
+\centering
+\caption{cpuid latency leaf: 0x2 (time: us)}
+\label{tab:cpuid_0x2}
+\begin{tabular}{lrrrr}
+\toprule
+{} &  50\% &  95\% &  99\% &   max \\
+\midrule
+bare            & 0.43 & 0.43 & 0.44 &  5.04 \\
+bare:tme        & 0.42 & 0.43 & 0.44 &  5.89 \\
+bare:tme:bypass & 0.42 & 0.43 & 0.43 &  5.79 \\
+vm:bare         & 0.62 & 0.62 & 0.63 &  7.28 \\
+vm:notdx        & 0.62 & 0.63 & 0.63 &  7.25 \\
+vm:notdx:bypass & 0.62 & 0.62 & 0.64 &  8.28 \\
+vm:tdx          & 3.59 & 3.61 & 3.62 & 74.86 \\
+vm:tdx:bypass   & 3.65 & 4.75 & 4.79 & 30.05 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}
+\centering
+\caption{cpuid latency leaf: 0x15 (time: us)}
+\label{tab:cpuid_0x15}
+\begin{tabular}{lrrrr}
+\toprule
+{} &  50\% &  95\% &  99\% &   max \\
+\midrule
+bare            & 0.99 & 1.02 & 1.02 & 33.42 \\
+bare:tme        & 0.99 & 1.02 & 1.02 &  6.51 \\
+bare:tme:bypass & 0.98 & 1.00 & 1.01 &  9.90 \\
+vm:bare         & 0.64 & 0.64 & 0.65 & 19.86 \\
+vm:notdx        & 0.63 & 0.64 & 0.64 &  8.40 \\
+vm:notdx:bypass & 0.64 & 0.65 & 0.65 &  7.55 \\
+vm:tdx          & 1.47 & 1.60 & 1.61 & 48.42 \\
+vm:tdx:bypass   & 1.49 & 1.51 & 1.52 & 43.69 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}
+\centering
+\caption{cpuid latency leaf: 0x16 (time: us)}
+\label{tab:cpuid_0x16}
+\begin{tabular}{lrrrr}
+\toprule
+{} &  50\% &  95\% &  99\% &   max \\
+\midrule
+bare            & 0.95 & 0.97 & 0.97 &  8.75 \\
+bare:tme        & 0.97 & 0.99 & 0.99 &  6.46 \\
+bare:tme:bypass & 0.96 & 0.98 & 0.98 &  6.50 \\
+vm:bare         & 0.63 & 0.64 & 0.65 &  6.20 \\
+vm:notdx        & 0.64 & 0.65 & 0.66 & 13.29 \\
+vm:notdx:bypass & 0.64 & 0.64 & 0.65 &  4.51 \\
+vm:tdx          & 3.58 & 3.61 & 3.62 & 62.92 \\
+vm:tdx:bypass   & 3.65 & 3.67 & 3.68 & 47.16 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Memory overhead}
+We measure the memory overhead of TDX using the following benchmarks using phoronix-test-suite~\cite{phoronix}.
+Here, we report normalized overhead compared to the baremetal (``bare'').
+
+\begin{description}
+\item[RAMSpeed~\cite{ramspeed}] This measures the memory latency with several operations. \autoref{fig:ramspeed} shows the results.
+\item[Tinymembench~\cite{tinymembench}] This benchmark measures the memory latency of the system. \autoref{fig:membench} shows the results.
+\item[MBW~\cite{mbw}] This measures the memory bandwidth of the system. \autoref{fig:membench} shows the results.
+% \item[Stream~\cite{stream}] This benchmark measures the memory bandwidth of the system. \autoref{fig:stream} shows the results.
+\end{description}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=1.0\textwidth]{./experiment/phoronix/all_ramspeed.pdf}
+\caption{RAMSpeed benchmarks (baseline: ``bare'')}
+\label{fig:ramspeed}
+\end{figure*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=1.0\textwidth]{./experiment/phoronix/all_memory.pdf}
+\caption{Tinymembench and MBW benchmarks (baseline: ``bare'')}
+\label{fig:membench}
+\end{figure*}
+
+% TODO: we should check if vector instruction is available in VMs
+% \begin{figure*}[t]
+% \centering
+% \includegraphics[width=1.0\textwidth]{./experiment/phoronix/all_stream.pdf}
+% \caption{Stream benchmark (baseline: ``bare'')}
+% \label{fig:stream}
+% \end{figure*}
+
+We observe the followings from the results.
+\begin{itemize}
+    \item For the RAMSpeed benchmarks, we observe 3.3\% overhead for ``bare:tme'' and 6.38\% for ``vm:tdx'' in geometric mean.
+    \item For the Tinymembench benchmarks, we observe 5.95\% overhead for ``bare:tme'' and 4.42\% for ``vm:tdx'' in geometric mean.
+    \item For the MBW benchmarks, we observe 9.37\% overhead for ``bare:tme'' and 10.52\% for ``vm:tdx'' in geometric mean.
+    \item The overhead of the memory bandwidth (MBW) is larger than the overhead of the memory latency (RAMSpeed, Tinymembench).
+\end{itemize}
+
+\section{Application Benchmarks}
+\label{sec:app:benchmark}
+
+We measure several application benchmarks using Phoronix Benchmark Suite~\cite{phoronix}.
+We especially run compilation and NPB (NAS Parallel Benchmarks) benchmarks as CPU-intensive applications and lz4 and SQLite benchmarks as memory-intensive applications.
+Here, we report normalized overhead compared to the normal virtual machine (``bare:vm'').
+\note{TDX VM (``vm:tdx'') may have additional overhead due to the vCPU over-commitment.}
+
+\begin{description}
+\item[Compilation benchmarks~\cite{compilation}] This measures compilation times of several applications. \autoref{fig:compilation} shows the results.
+\item[NAS parallel benchmarks (NPB)~\cite{npb}] This measures the times of several MPI parallel applications. \autoref{fig:npb} shows the results.
+\item[LZ4~\cite{lz4}] This measures the compression and decompression time with LZ4 algorithm. \autoref{fig:lz4} shows the results.
+\item[SQLite~\cite{sqlite_bench}] This measures the time to perform a pre-defined number of insertions to a SQLite database. \autoref{fig:membench} shows the results.
+\end{description}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=1.0\textwidth]{./experiment/phoronix/vm_compilation.pdf}
+\caption{Compilation time (baseline: ``vm:bare'')}
+\label{fig:compilation}
+\end{figure*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=1.0\textwidth]{./experiment/phoronix/vm_nas.pdf}
+\caption{NAS Benchmarks (baseline: ``vm:bare'')}
+\label{fig:npb}
+\end{figure*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=1.0\textwidth]{./experiment/phoronix/vm_lz4.pdf}
+\caption{LZ4  (baseline: ``vm:bare'')}
+\label{fig:lz4}
+\end{figure*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=1.0\textwidth]{./experiment/phoronix/vm_sqlite.pdf}
+\caption{SQLite  (baseline: ``vm:bare'')}
+\label{fig:sqlite}
+\end{figure*}
+
+We observe the followings from the results.
+\begin{itemize}
+    \item As of compilation and NPB benchmarks, we observe around 10 to up to 60\% overhead in the TDX VM (``vm:tdx''). However, vPCU over-commitment might affect these results, so we expect the actual performance will be better.
+    \item As of LZ4 benchmaks, both ``vm:notdx'' and ``vm:tdx'' have similar performance. This is because LZ4 is a memory-intensive application, and the main overhead comes from memory encryption/decryption. NPB and these results also highlight the importance of TME bypass if we want to eliminate the memory encryption overhead in non-TDX VMs.
+    \item As of SQLite benchmarks, we observe larger performance overhead in ``vm:tdx'' when copy size is larger than 32. This might be due to the vCPU over-commitment, but further investigation is needed.
+\end{itemize}
+
+\section{Remarks}
+This report presents the basic performance experiments on Intel TDX with QEMU/KVM.
+Further experiments will include but not be limited to the following.
+
+\begin{itemize}
+    \item More detailed breakdown of the overhead in TDX VM, including \#VE and TDX call handling.
+    \item Performance evaluation on other hypervisors such as Cloud Hypervisor.
+    \item Effect of vNUMA. vNUMA is known to have a significant impact on the performance of VM~\cite{sev_eval}.
+    \item Memory management time in VMs.
+    \item Performance effect of having multiple TDX and Non-TDX VMs.
+    \item Boot time. TDX requires a special memory configuration, which affects the boot time.
+    \item I/O performance with and without TDX-IO.
+    \item Attestation time.
+    \item Migration time.
+\end{itemize}
+
+
+%-------------------------------------------------------------------------------
+% \bibliographystyle{plain}
+\printbibliography
+
+\appendix
+\section*{Appendix}
+\section{Errata and remarks on the documentation~\cite{linux-stacks-for-intel-tdx-2023ww01}}
+\myparagraph{Section 3.2 ``BIOS Configurations''}
+\begin{itemize}
+    \item In our machine, we need to enable ``Socket Configuration => Processor Configuration => Extended APIC''. Otherwise, we could not enable TDX and SGX.
+    \item In our machine, ``Disable excluding Mem below 1MB'' configuration is in ``Processor Configuration => TME, TME-MT, TDX => Disable excluding Mem below 1MB'', not "Processor Configuration => Disable excluding Mem below 1MB''.
+    \item Also, the documentation says, ``Disable excluding Mem below 1MB in CMR'' should be ``Enable/Disable''. It is unclear whether we should enable it or not.
+\end{itemize}
+
+\myparagraph{Section 3.3.3 ``Ubuntu 22.04''}
+\begin{itemize}
+    \item `python-dev` is also a prerequisite. Otherwise, building mvp-tdx-kernel-v5.19 fails because of a lack of `python-config`.
+\end{itemize}
+
+\myparagraph{Section 3.5.1.2 ``Ubuntu 22.04''}
+\begin{itemize}
+    \item `libguestfs-tools` is also a prerequisite.
+    \item We need to run `sudo chmod +r /boot/vmlinuz-*` before  running ./tdx-guest-stack.sh because in the shell script libguestfs tries to access /boot/vmlinuz, but that is not readable by default in Ubuntu (\url{https://bugs.launchpad.net/fuel/+bug/1467579})
+\end{itemize}
+
+\myparagraph{Section 5.4 ``Measurement \& EventLog Tools''}
+\begin{itemize}
+    \item The scripts are in the directory `tdx-tools-2023ww01.rdc/attestation/pytdxmeasure'.
+\end{itemize}
+
+\section{Troubleshooting}
+Section 7.1 in the documentation~\cite{linux-stacks-for-intel-tdx-2023ww01} describes how to troubleshoot TDX.
+Here, we describe some problems we encountered and how to solve them.
+
+\myparagraph{Problem: TDX is not enabled (MSR reports TDX disabled) even if it is enabled in BIOS}
+As the documentation says, ``at least 1 DIMM per CPU socket and ensure DIMM are plugged in corresponding slots.''
+Inserting DIMMs properly solved the problem.
+
+\myparagraph{Check MSR values}
+We can check related MSR values with the following script.
+\lstinputlisting[language=bash]{./scripts/check_msr.sh}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%  LocalWords:  endnotes includegraphics fread ptr nobj noindent
+%%  LocalWords:  pdflatex acks
+%%  vim: spell spelllang=en textwidth=0

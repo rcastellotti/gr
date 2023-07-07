@@ -15,6 +15,8 @@ mkShell {
     gdb
     # needed to run cpuid
     cpuid
+    
+    fio
     jupyter
     python310Packages.seaborn
   ];

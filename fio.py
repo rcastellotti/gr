@@ -49,9 +49,9 @@ tests = [
 
 for test in tests:
     run_fio_test(**test, machine="baremetal", filename="/mnt/a")
-    run_fio_test(**test, machine="scsi-sev", filename="/mnt/a")
-    run_fio_test(**test, machine="blk-sev", filename="/mnt/a")
-    run_fio_test(**test, machine="nvme-sev", filename="/mnt/a")
-    run_fio_test(**test, machine="scsi-nosev", filename="/mnt/a")
-    run_fio_test(**test, machine="blk-nosev", filename="/mnt/a")
-    run_fio_test(**test, machine="nvme-nosev", filename="/mnt/a")
+    # run_fio_test(**test, machine="scsi-sev", filename="/mnt/a")
+    # run_fio_test(**test, machine="blk-sev", filename="/mnt/a")
+    # run_fio_test(**test, machine="nvme-sev", filename="/mnt/a")
+    # run_fio_test(**test, machine="scsi-nosev", filename="/mnt/a")
+    # run_fio_test(**test, machine="blk-nosev", filename="/mnt/a")
+    # run_fio_test(**test, machine="nvme-nosev", filename="/mnt/a")
