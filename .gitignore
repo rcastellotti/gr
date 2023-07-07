@@ -20,3 +20,4 @@ kinetic-server-cloudimg-amd64.img
 *.bbl
 *.aux
 *.xml
+report/_minted-main/
