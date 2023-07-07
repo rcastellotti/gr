@@ -1,7 +1,9 @@
 import subprocess
 
 def run_fio_test(machine, filename, iodepth, rw, bs, numjobs):
-    name = f"{machine}-{rw}-{bs}-{numjobs}-{iodepth}"
+
+    name = f"{rw}-{machine}-{bs}-{numjobs}-{iodepth}"
+    print(f"running benchmark: {name}")
     command = [
         "fio",
         "--name=" + name,
@@ -47,9 +49,9 @@ tests = [
 
 for test in tests:
     run_fio_test(**test, machine="baremetal", filename="/mnt/a")
-    run_fio_test(**test, machine="sev-scsi", filename="/mnt/a")
-    run_fio_test(**test, machine="sev-blk", filename="/mnt/a")
-    run_fio_test(**test, machine="sev-nvme", filename="/mnt/a")
-    run_fio_test(**test, machine="nosev-scsi", filename="/mnt/a")
-    run_fio_test(**test, machine="nosev-blk", filename="/mnt/a")
-    run_fio_test(**test, machine="nosev-nvme", filename="/mnt/a")
+    run_fio_test(**test, machine="scsi-sev", filename="/mnt/a")
+    run_fio_test(**test, machine="blk-sev", filename="/mnt/a")
+    run_fio_test(**test, machine="nvme-sev", filename="/mnt/a")
+    run_fio_test(**test, machine="scsi-nosev", filename="/mnt/a")
+    run_fio_test(**test, machine="blk-nosev", filename="/mnt/a")
+    run_fio_test(**test, machine="nvme-nosev", filename="/mnt/a")
