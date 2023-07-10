@@ -11,3 +11,4 @@ stdout.log
 ovmf/
 .images/
 kinetic-server-cloudimg-amd64.img
+.ipynb_checkpoints/
