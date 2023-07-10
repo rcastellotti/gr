@@ -1,8 +1,8 @@
 import subprocess
 
-def run_fio_test(machine, filename, iodepth, rw, bs, numjobs):
+def run_fio_test(machine,group, testcase, iodepth, rw, bs, numjo"bs"):
 
-    name = f"{rw}-{machine}-{bs}-{numjobs}-{iodepth}"
+    name = f"{machine}-{group}-{testcase}"
     print(f"running benchmark: {name}")
     command = [
         "fio",
@@ -11,40 +11,31 @@ def run_fio_test(machine, filename, iodepth, rw, bs, numjobs):
         "--iodepth=" + str(iodepth),
         "--rw=" + rw,
         "--size=1G",
-        "--bs=" + bs,
-        "--numjobs=" + str(numjobs),
+        "--"bs"=" + "bs",
+        "--numjo"bs"=" + str(numjo"bs"),
         "--runtime=30",
         "--output-format=json",
         "--direct=1",
-        "--output=" + "direct-"+name + ".json",
+        "--output=" name + ".json",
     ]
-    # subprocess.run(command)
-    # command = [
-    #     "fio",
-    #     "--name=" + name,
-    #     "--filename=" + filename,
-    #     "--iodepth=" + str(iodepth),
-    #     "--rw=" + rw,
-    #     "--size=1G",
-    #     "--bs=" + bs,
-    #     "--numjobs=" + str(numjobs),
-    #     "--runtime=30",
-    #     "--output-format=json",
-    #     "--output=" + "indirect-"+name + ".json",
-    # ]
     subprocess.run(command)
 
 
-# Test configurations
-tests = [
-    # {"iodepth": 128,"rw": "randread","bs": "4k","numjobs": 4},
-    # {"iodepth": 128,"rw": "randwrite","bs": "4k","numjobs": 4},
-    # {"iodepth": 128,"rw": "read","bs": "128k","numjobs": 4},
-    # {"iodepth": 128,"rw": "write","bs": "128k","numjobs": 4},   
-    {"iodepth": 1,"rw": "randread","bs": "4k","numjobs": 1},
-    {"iodepth": 1,"rw": "randwrite","bs": "4k","numjobs": 1},
-    {"iodepth": 1,"rw": "read","bs": "4k","numjobs": 1},
-    {"iodepth": 1,"rw": "write","bs": "4k","numjobs": 1},
+
+tests=[
+    {"group":"bandwidth","testcase":"read","bs":"128K","rw":"read","iodepth":"128","numjobs":"1"},
+    {"group":"bandwidth","testcase":"write","bs":"128K","rw":"write","iodepth":"128","numjobs":"1"},
+    {"group":"IOPS","testcase":"randread","bs":"4K","rw":"randread","iodepth":"32","numjobs":"4"},
+    {"group":"IOPS","testcase":"mixread","bs":"4K","rw":"randread 70%","iodepth":"32","numjobs":"4"},
+    {"group":"IOPS","testcase":"mixwrite","bs":"4K","rw":"randwrite 30%","iodepth":"32","numjobs":"4"},
+    {"group":"IOPS","testcase":"randwrite","bs":"4K","rw":"randread","iodepth":"32","numjobs":"4"},
+    {"group":"IOPS","testcase":"randwrite","bs":"4K","rw":"randread","iodepth":"32","numjobs":"4"},
+    {"group":"average_latency","testcase":"randread","bs":"4K","rw":"randread","iodepth":"1","numjobs":"1"},
+    {"group":"average_latency","testcase":"randwrite","bs":"4K","rw":"randwrite","iodepth":"1","numjobs":"1"},
+    {"group":"average_latency","testcase":"read","bs":"4K","rw":"read","iodepth":"1","numjobs":"1"},
+    {"group":"average_latency","testcase":"write","bs":"4K","rw":"write","iodepth":"1","numjobs":"1"}
+
+
 ]
 
 for test in tests:
@@ -54,4 +45,4 @@ for test in tests:
     # run_fio_test(**test, machine="nvme-sev", filename="/mnt/a")
     # run_fio_test(**test, machine="scsi-nosev", filename="/mnt/a")
     # run_fio_test(**test, machine="blk-nosev", filename="/mnt/a")
-    # run_fio_test(**test, machine="nvme-nosev", filename="/mnt/a")
+    # run_fio_test(**test, machine="nvme-nosev", filename="/mnt/a")∏ssh
