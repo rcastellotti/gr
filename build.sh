@@ -1,8 +1,12 @@
 #!/bin/bash
 # SPDX-License-Identifier: MIT
 
+set -xe
+KERNEL_GIT_URL="https://github.com/AMDESE/linux.git"
+KERNEL_HOST_BRANCH="snp-host-latest"
+QEMU_GIT_URL=""
+
 SCRIPT_DIR="$(dirname $0)"
-. ${SCRIPT_DIR}/stable-commits
 [ -e /etc/os-release ] && . /etc/os-release
 
 run_cmd()
@@ -20,7 +24,7 @@ build_install_ovmf()
 	DEST="$1"
 
 	GCC_VERSION=$(gcc -v 2>&1 | tail -1 | awk '{print $3}')
-	GCC_MAJOR=$(echo $GCC_VERSION | awk -F . '{print $1}')
+	GCC_MAJOR=$(echo $GCC_VERSION | awk -F . '{print $1}')~
 	GCC_MINOR=$(echo $GCC_VERSION | awk -F . '{print $2}')
 	if [ "$GCC_MAJOR" == "4" ]; then
 		GCCVERS="GCC${GCC_MAJOR}${GCC_MINOR}"
@@ -53,31 +57,14 @@ build_install_ovmf()
 
 build_install_qemu()
 {
-	DEST="$1"
-
-	[ -d qemu ] || run_cmd git clone --single-branch -b ${QEMU_BRANCH} ${QEMU_GIT_URL} qemu
-
-	MAKE="make -j $(getconf _NPROCESSORS_ONLN) LOCALVERSION="
-
+	git clone --single-branch -b "snp-latest" https://github.com/AMDESE/qemu.git qemu
+	MAKE="make -j $(getconf _NPROCESSORS_ONLN)"
 	pushd qemu >/dev/null
-		run_cmd git apply ../qemu.patch
-		run_cmd ./configure --target-list=x86_64-softmmu --prefix=$DEST --disable-werror
-		run_cmd $MAKE
-		run_cmd $MAKE install
+		git apply ../qemu.patch
+		./configure --target-list=x86_64-softmmu --prefix=/mnt/roberto/gr/usr/local --disable-werror
+		$MAKE
+		$MAKE install
 	popd >/dev/null
-}
-
-function usage()
-{
-	echo "Usage: $0 [OPTIONS] [COMPONENT]"
-	echo "  where COMPONENT is an individual component to build:"
-	echo "    qemu, ovmf, kernel [host|guest]"
-	echo "    (default is to build all components)"
-	echo "  where OPTIONS are:"
-	echo "  --install PATH          Installation path (default $INSTALL_DIR)"
-	echo "  -h|--help               Usage information"
-
-	exit 1
 }
 
 INSTALL_DIR="`pwd`/usr/local"
@@ -94,7 +81,6 @@ while [ -n "$1" ]; do
 		;;
 	-*|--*)
 		echo "Unsupported option: [$1]"
-		usage
 		;;
 	*)
 		break
