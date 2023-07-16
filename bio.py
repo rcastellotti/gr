@@ -11,15 +11,24 @@ def get_val(string,s,e):
 
 
 files=os.listdir("io-benchmarks")
-with open("ioresults.csv","a+") as csvfile:
-    writer = csv.writer(csvfile)
-    writer.writerow(["group","name","result"])
-    for file in sorted(files):
-        with open("io-benchmarks/"+file, "r") as f:
-            j=json.load(f)
-            res=''
-            if "write" in file:
-                res=j['jobs'][0]['write']['iops']
-            if "read" in file:
-                res=j['jobs'][0]['read']['iops']
-            writer.writerow([get_val(file,0,1),get_val(file,1,3), res])
+al_results=csv.writer(open("al_results.csv","a+"))
+bw_results=csv.writer(open("bw_results.csv","a+"))
+iops_results=csv.writer(open("iops_results.csv","a+"))
+al_results.writerow(["group","name","result"])
+bw_results.writerow(["group","name","result"])
+iops_results.writerow(["group","name","result"])
+
+for file in sorted(files):
+    with open("io-benchmarks/"+file, "r") as f:
+        j=json.load(f)
+        res=''
+        if "write" in file:
+            res=j['jobs'][0]['write']['iops']
+        if "read" in file:
+            res=j['jobs'][0]['read']['iops']
+        if "bw" in file:
+            bw_results.writerow([get_val(file,0,1),get_val(file,1,3), res])
+        elif "iops" in file:
+            iops_results.writerow([get_val(file,0,1),get_val(file,1,3), res])
+        else:
+            al_results.writerow([get_val(file,0,1),get_val(file,1,3), res])
