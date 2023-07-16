@@ -9,6 +9,15 @@ M="baremental"
 
 T=$VD-$M
 
+if [ $# -lt 2 ]; then
+    echo "usage: ./fio.sh <machine> <disk>"
+    exit 1
+fi
+
+T=$2-$1
+
+echo running benchmarks for $T
+
 fio \
     --name="bw_read" \
     --filename="/mnt/a" \
