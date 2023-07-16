@@ -22,7 +22,6 @@
     -enable-kvm \
     -cpu EPYC-v4,host-phys-bits=true \
     -smp 16 \
-    -machine type=q35,confidential-guest-support=sev0,memory-backend=ram1,kvm-type=protected,vmport=off \
     -object memory-backend-memfd-private,id=ram1,size=16G,share=true \
     -object sev-snp-guest,id=sev0,policy=0x30000,cbitpos=51,reduced-phys-bits=1,init-flags=0,host-data=b2l3bmNvd3FuY21wbXA \
     -drive if=pflash,format=raw,unit=0,file=OVMF_files/OVMF_CODE_sev.fd,readonly=on \

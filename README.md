@@ -60,3 +60,7 @@ sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./sev.sh
 - AMD [host kernels](https://github.com/AMDESE/linux) -- check branch names for each feature (e.g., SEV, ES, SNP)
 - [QEMU](https://github.com/AMDESE/qemu) provided by AMD
 - [OVMF](https://github.com/AMDESE/ovmf) provided by AMD
+
+
+
+remembver to launch benches with sudo

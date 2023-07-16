@@ -11,7 +11,7 @@ def get_val(string,s,e):
 
 
 files=os.listdir("io-benchmarks")
-with open("iores.csv","a+") as csvfile:
+with open("ioresults.csv","a+") as csvfile:
     writer = csv.writer(csvfile)
     writer.writerow(["group","name","result"])
     for file in sorted(files):
@@ -22,4 +22,4 @@ with open("iores.csv","a+") as csvfile:
                 res=j['jobs'][0]['write']['iops']
             if "read" in file:
                 res=j['jobs'][0]['read']['iops']
-            writer.writerow([get_val(file,1,2),get_val(file,2,4), res])
+            writer.writerow([get_val(file,0,1),get_val(file,1,3), res])
