@@ -1,11 +1,6 @@
 Encryption at rest (designed to prevent the attacker from accessing the unencrypted data by ensuring the data is encrypted when on disk from Microsoft, cite properly) has been around for a long time, but this leaves a big part of daily computing unencrypted, namely RAM and CPU registers, to tackle this issue major chip producers started to develop a technlogy to enable "confidential computing", namely AMD Secure Encrypted Virtualization (SEV) and Intel Trusted Domain Extensions (TDX). In this short article we try to understand a little more about AMD SEV, assuming nothing and getting our hands dirty step by step.
 
 
-
-
-
-
-
 OVMF is a project maintanied by TianoCore aiming to enable UEFI support for virtual machines, it is based on EDK 2, we will use OVMF to generate the executable firmware and the non-volatile variable store, it is important to create a vm-specific cody of `OVMF_vars.fd` because the variable store should be private for every virtual machine
 
 QEMU is a generic open source machine emulator and virtualizer, we will use QEMU toghether with KVM, the Kernel Virtual machine to virtualize our machines.
@@ -67,7 +62,6 @@ AVG	Method: MCBLOCK	Elapsed: 0.09631	MiB: 1024.00000	Copy: 10632.322 MiB/s
 - https://www.amd.com/en/developer/sev.html
 - https://arch.cs.ucdavis.edu/assets/papers/ipdps21-hpc-tee-performance.pdf
 - https://cdrdv2.intel.com/v1/dl/getContent/690419
-- https://www.amd.com/content/dam/amd/en/documents/developer/sev-tio-whitepaper.pdf
 - https://www.amd.com/content/dam/amd/en/documents/developer/58207-using-sev-with-amd-epyc-processors.pdf
 - https://www.amd.com/system/files/TechDocs/40332.pdf
 - https://www.amd.com/system/files/TechDocs/cloud-security-epyc-hardware-memory-encryption.pdf
