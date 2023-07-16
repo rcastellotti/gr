@@ -87,7 +87,7 @@ fio \
     --output="iops_mixwrite-$T.json"
 
 fio \
-    --name="average_latency-randread"  \
+    --name="al-randread"  \
     --filename="/mnt/a" \
     --iodepth="1" \
     --rw="randread" \
@@ -97,9 +97,9 @@ fio \
     --runtime="60" \
     --output-format="json"  \
     --direct=1 \
-    --output="average_latency_randread-$T.json"
+    --output="al_randread-$T.json"
 
-fio --name="average_latency-randwrite"  \
+fio --name="al-randwrite"  \
     --filename="/mnt/a" \
     --iodepth="1" \
     --rw="randwrite" \
@@ -109,10 +109,10 @@ fio --name="average_latency-randwrite"  \
     --runtime="60" \
     --output-format="json"  \
     --direct=1 \
-    --output="average_latency_randwrite-$T.json"
+    --output="al_randwrite-$T.json"
 
 fio \
-    --name="average_latency-read"\
+    --name="al-read"\
     --filename="/mnt/a"\
     --iodepth="1"\
     --rw="read" \
@@ -122,10 +122,10 @@ fio \
     --runtime="60" \
     --output-format="json"  \
     --direct=1 \
-    --output="average_latency_read-$T.json"
+    --output="al_read-$T.json"
 
 fio \
-    --name="average_latency-write"  \
+    --name="al-write"  \
     --filename="/mnt/a" \
     --iodepth="1" \
     --rw="write" \
@@ -135,4 +135,4 @@ fio \
     --runtime="60" \
     --output-format="json"  \
     --direct=1 \
-    --output="average_latency_write-$T.json"
+    --output="al_write-$T.json"
