@@ -36,18 +36,6 @@ AVG	Method: DUMB	Elapsed: 0.19166	MiB: 1024.00000	Copy: 5342.700 MiB/s
 AVG	Method: MCBLOCK	Elapsed: 0.09631	MiB: 1024.00000	Copy: 10632.322 MiB/s
 ```
 
-### benchmarks
-
-+ Test different system configs (memory and CPUS)
-+ AMD-ES enabled and disabled only run cpu intensive benchmarks?
-+ Test different machines running at the same time
-
-## todo
-- AMD Secure Encrypted Virtualization-Secure Trusted I/O (SEV-TIO)
-- SEV on containers (kata)
-- bios configuration
-- numa enabled/disabled
-
 ## References
 
 - https://www.amd.com/system/files/documents/using-amd-secure-encrypted-virtualization-encrypted-state-on-think-system-servers.pdf
@@ -69,11 +57,7 @@ AVG	Method: MCBLOCK	Elapsed: 0.09631	MiB: 1024.00000	Copy: 10632.322 MiB/s
 - https://jcadden.medium.com/confidential-computing-with-kubernetes-sev-guest-protection-for-kata-containers-8f29f0a3a2d7
 - https://www.kernel.org/doc/html/v5.6/virt/kvm/amd-memory-encryption~.html
 - https://www.qemu.org/docs/master/system/i386/amd-memory-encryption.html
-
-
 - https://www.amd.com/system/files/TechDocs/58019-svsm-draft-specification.pdf
-
-#### Section 3.2 "BIOS Configurations"
 
 ## investigating I/O related perfomance
 
