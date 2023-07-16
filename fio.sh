@@ -1,13 +1,4 @@
-
-VD="blk"
-VD="scsi"
-VD="nvme"
-
-M="sev"
-M="nosev"
-M="baremental"
-
-T=$VD-$M
+#!/bin/bash
 
 if [ $# -lt 2 ]; then
     echo "usage: ./fio.sh <machine> <disk>"
