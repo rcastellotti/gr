@@ -59,7 +59,7 @@ fio \
     --direct=1 \
     --output="iops_randwrite-$T.json"
 
-fio --name="iops_mixwrite" \
+fio --name="iops_mixread" \
     --rwmixread="70" \
     --filename="/mnt/a" \
     --iodepth="32" \
@@ -70,10 +70,10 @@ fio --name="iops_mixwrite" \
     --runtime="60" \
     --output-format="json"  \
     --direct=1 \
-    --output="iops_mixwrite-$T.json"
+    --output="iops_mixread-$T.json"
 
 fio \
-    --name="iops_mixread" \
+    --name="iops_mixwrite" \
     --rwmixwrite="30" \
     --filename="/mnt/a" \
     --iodepth="32" \
@@ -84,7 +84,7 @@ fio \
     --runtime="60" \
     --output-format="json"  \
     --direct=1 \
-    --output="iops_mixread-$T.json"
+    --output="iops_mixwrite-$T.json"
 
 fio \
     --name="average_latency-randread"  \
