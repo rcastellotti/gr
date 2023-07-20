@@ -161,13 +161,12 @@ We now introduced every part of AMD's effort to popularize Confidential Computin
 We are running three distinct kinds of benchmarks: Compilation, Memory Benchmarks and I/O benchmarks to evaluate whether using the aforementioned confidential technology incurs in some overhead. To run the benchmarks we are using rcastellotti/tinyben \cite{tinyben}, an experimental benchmarking tool aimed to replace the popular Phoronix Test Suite \cite{pts} benchmarking suite.
 
 \begin{description}
-    \item[Compilation Benchmarks] We are using compilation as an all-around benchmark because it is a "real world" benchmark. We are compiling some popular opensource tools like \href{https://github.com/godotengine/godot}{Godot Game Engine}, \href{https://github.com/imagemagick/imagemagick}{ImageMagick} (using gcc), \href{https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git}{Linux} (defconfig), the entire \href{https://github.com/llvm/llvm-project}{LLVM Project} (using ninja) and measuring how long does it take to complete the compilation process.
+    \item[Compilation Benchmarks] We are using compilation as an all-around benchmark because it is a "real world" benchmark. We are compiling some popular opensource projects like \href{https://github.com/godotengine/godot}{Godot Game Engine}, \href{https://github.com/imagemagick/imagemagick}{ImageMagick} (using gcc), \href{https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git}{Linux} (defconfig), the entire \href{https://github.com/llvm/llvm-project}{LLVM Project} (using ninja) and measuring how long does it take to complete the compilation process.
     \item[Memory Benchmarks] To bechmark memory we are using ssvb/tinymembench \cite{tinymembench}, a tool to measure memory throughput and latency, we are mainly interested in bandwidth for the \texttt{MEMCPY} and \texttt{MEMSET} operations
-    \item[I/O Benchmarks] 
+    \item[I/O Benchmarks] To measure I/O performance we are running two different benchmarks, first we are performing 2500 sqlite insertions in a table, then we are running redis-benchmark, a tool shipped toghether with redis. We are interested in Requests per Second and latency for the main operations. 
 \end{description}
+
 \subsection{}
-
-
 
 \subsection{Memory Benchmarks}
 
@@ -178,23 +177,24 @@ We are running three distinct kinds of benchmarks: Compilation, Memory Benchmark
     \centering
     \label{tab:tinyben-results}
     \begin{tabular}{l|l|r}
-        \textbf{benchmark} &       \textbf{SEV} &       \textbf{NOSEV} \\
+        \textbf{benchmark} &       \textbf{SEV-SNP} &       \textbf{NOSEV} \\
     \hline
-    Godot Game Engine compilation (LIB)       &  410 s         & 395 s   \\
-    ImageMagick compilation (gcc) (LIB)       &  70 s          & 69 s \\
-    Linux compilation (defconfig) (LIB)       &  329 s         & 322 s \\
-    llvm-project compilation (ninja) (LIB)    &  774 s         & 733 s  \\
-    sqlite 2500 insertions (LIB)              &  4.106 s       & 4.31 s \\
+    Godot Game Engine compilation (LIB)       &  410 sec         & 395 sec  \\
+    ImageMagick compilation (gcc) (LIB)       &  70 sec          & 69 sec \\
+    Linux compilation (defconfig) (LIB)       &  329 sec         & 322 sec \\
+    LLVM Project compilation (ninja) (LIB)    &  774 sec         & 733 sec  \\
+    Sqlite 2500 insertions (LIB)              &  4.106 sec       & 4.31 sec \\
     ssvb/tinymembench MEMCPY (HIB)            &  22727.0 MB/s  & 23628.2 MB/s \\
     ssvb/tinymembench MEMSET (HIB)            &  33170.8 MB/s  & 36367.7 MB/s \\
-    redis-benchmark SET rps (HIB)             &  91911.76      & 110864.74 \\
-    redis-benchmark SET average latency (LIB) &  0.283 ms      & 0.234 ms \\
-    redis-benchmark GET rps (HIB)             &  94339.62      & 110987.79 \\
-    redis-benchmark GET average latency (LIB) &  0.275 ms	   & 0.233 ms \\
+    redis-benchmark SET RPS (HIB)             &  91911.76      & 110864.74 \\
+    redis-benchmark SET average latency (LIB) &  0.283 msec      & 0.234 msec \\
+    redis-benchmark GET RPS (HIB)             &  94339.62      & 110987.79 \\
+    redis-benchmark GET average latency (LIB) &  0.275 msec	   & 0.233 msec \\
     \end{tabular}
-    \caption{Compiulation, Memory and I/O benchmarks. We are using compilation as an all-around technique to benchmark a system because it is a "real world" benchmark. We are compiling some popular opensource tools like \href{https://github.com/godotengine/godot}{Godot Game Engine}, \href{https://github.com/imagemagick/imagemagick}{ImageMagick} (using gcc), \href{https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git}{linux} (defconfig), the entire \href{https://github.com/llvm/llvm-project}{LLVM Project} (using ninja)}. To benchmark 
+    \caption{Comparing benchmark results run on two QEMU vms (16 vCPUs, 16GB ram, virtio-scsi storage). HIB and LIB mean respectively "Higher is Better" and "Lower is Better", RPS stands for "Requests Per Second"} 
 \end{table*}
 
+As we can see in table \ref{tab:tinyben-results} the overhead introduced by the usage of Confidential Computing technology across the three categories of benchmarks is generally mild, and negligible in certain cases (ImageMagick compilation and Sqlite benchmark), further investigation tweaking the amount of resources available to each machine is necessary to correcly esteem the exact performance degradation values.
 \begin{table*}
     \centering
     \label{tab:iops-results}
