@@ -1,6 +1,6 @@
 import subprocess
 
-def run_fio_test(machine,group, testcase, iodepth, rw, bs, numjo"bs"):
+def run_fio_test(machine,group, testcase, iodepth, rw, bs, numjobs):
 
     name = f"{machine}-{group}-{testcase}"
     print(f"running benchmark: {name}")

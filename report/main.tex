@@ -16,9 +16,12 @@
 
 TODO:
 \begin{itemize}
+    \item change kernel version
     \item cite https://github.com/AMDESE/AMDSEV (got qemu commands from here)
     \item add BIOS configuration
     \item do i need to add instructions to launch machines here in the report or should I just link to the project's README?
+    \item in SEV-ES it seems like VMRUN and VMEXIT need to perform some additional tasks, can we benchmark this in some way?
+    \item describe different storage virtualization techniques
 \end{itemize}
 
 \begin{abstract}
@@ -31,7 +34,7 @@ TODO:
 \begin{table*}
     \centering
     \label{tab:experiment-environment}
-    \begin{tabular}{l|l}
+    \begin{tabular}{l|l   }
         \hline
         Host CPU      & \texttt{AMD EPYC 7713P 64-Cores} \\
         Host Memory   & \texttt{HMAA8GR7AJR4N-XN (Hynix) 3200MHz 64 GB $\times$ 8 (512GB)} \\
@@ -96,7 +99,7 @@ We now switch our focus to AMD SEV, a technology powered by AMD SME that enables
 
 \section{AMD Secure Encrypyted Virtualization (SEV)}
 
-AMD SEV is an attempt to make virtual machines more secure to use by encrypting data to and from a virtual machine, and enables a new security model protecting code from higher privileged resources, such as hypervisors. In this context, as mentioned before, we should never trust the hypervisor since it may be compromised or acting maliciously by default.
+AMD SEV is an attempt to make virtual machines more secure to use by encrypting data to and from a virtual machine, and enables a new security model protecting code from higher privileged resources, such as hypervisors or some privileged code running on the phyisical machine hosting the virtual machines. In this context, as mentioned before, we should never trust the hypervisor since it may be compromised or acting maliciously by default.
 
 \begin{figure}
     \centering
@@ -104,20 +107,17 @@ AMD SEV is an attempt to make virtual machines more secure to use by encrypting 
     \caption{SEV security layers, from \cite{memory-encryption}}
 \end{figure}
 
-SEV is an extension to the AMD-V architecture, when SEV is enabled SEV machines tag data with VM ASID (an unique identifier for that specific machine), this tag is used inside the SOC and prevents external entities to access it, when data leaves the chip we have no such problem because it is encrypted using the previously exchanged AES-128 bit key. These two things provide strong cryptography isolation between VMs run by the same hypervisor and between VMs and the hypervisor by itself. SEV guests can choose which pages to encrypt, this is handled setting the c-bit as mentioned before for SME. Only pages meant fot oustide communcations are considered shared and thus not encrypted.
+SEV is an extension to the AMD-V architecture, when SEV is enabled SEV machines tag data with VM ASID (an unique identifier for that specific machine), this tag is used inside the SOC and prevents external entities to access it, when data leaves the chip we have no such problem because it is encrypted using the previously exchanged AES-128 bit key. The aforementioned expedients provide strong cryptography isolation between VMs run by the same hypervisor and between VMs and the hypervisor by itself. SEV guests can choose which pages to encrypt, this is handled setting the c-bit as mentioned before for SME. Only pages meant fot oustide communcations are considered shared and thus not encrypted.
 
 \section{AMD Secure Encrypted Virtualization-Encrypted State (SEV-ES)}
 
-Up until now we only discussed encryption for memory, but a crucial portion of the system we want to protect are CPU registers, AMD SEV-ES encrypts all CPU register contents when a VM stops running. What this means is a malevolent actor is not able to read CPU's register contents when the machine is shutdown.
-
-The CPU register's state is saved and encrypted when the machine is shutdown.
+Up until now we only discussed encryption for memory, but a crucial portion of the system we want to protect are CPU registers, AMD SEV-ES encrypts all CPU register contents when a VM stops running. What this means is a malevolent actor is not able to read CPU's register contents when the machine is shutdown no matter the privilege level he acquired before, CPU register's state is saved and encrypted when the machine is shutdown.
 
 Protecting CPU register may be a daunting task because sometimes an Hypervisor may need to access VM CPU's register to provide services such as device emulation. These accesses must be protected, ES technlogy allows the guest VM to decide which registers are encrypted, in the same vein a machine can choose which memory pages are to be encrypted via the C-bit.
 
-SEV-ES introuduce a single atomic hardware instruction: \texttt{VMRUN}, when this intruction is executed for a guest the CPU loads all registers,
-when the VM is stops runnning (\texttt{VMEXIT}), register's state is saved automatically to  back to memory. These instructions are atomic because we need to be sure no one can sneak into this process and alter it and it is impossible to leak memory.
+SEV-ES introuduces a single atomic hardware instruction: \texttt{VMRUN}, when this intruction is executed for a guest the CPU loads all registers, when the VM stops runnning (\texttt{VMEXIT}), register's state is saved automatically to  back to memory. These instructions are atomic because we need to be sure no one can sneak into this process and alter it, ES guarantees in this way it is impossible to leak memory.
 
-Whenever hardware saves register it encrypts them with the very same AES-128 key we mentioned before, furthermore the CPU computes an integrity-check value and saves it into memory not accessible by the CPU, on next `VMRUN` instruction this will be checked to ensure nobody tried to tamper register's state. For further information about external communication consult the whitepaper (CITE) and amd reference manual chapter 15.
+Whenever hardware saves register it encrypts them with the very same AES-128 key we mentioned before, furthermore the CPU computes an integrity-check value and saves it into memory not accessible by the CPU, on next \texttt{VMRUN} instruction this will be checked to ensure nobody tried to tamper register's state. For further information about external communication consult the whitepaper (CITE) and AMD reference manual chapter 15 (HOW TO CITE THE SPECIFIC CHAPTER?).
 
 Similarly to AMD-SEV AMD-ES is completely transparent to application code, only the guest VM and the Hypervisor need to implement these specific features.
 
@@ -153,7 +153,146 @@ Inside each RMP entry there is a Validated bit, pages assigned to guests that ha
  
 More details are discussed in the introductory whitepaper \cite{sev-snp}
 
-We now introduced every part of AMD's effort to popularize Confidential Computing, now we will proceed by giving instructions to start such machines using QEMU/KVM and we will run some benchmarks to measure how these technlogies impact performance
+We now introduced every part of AMD's effort to popularize Confidential Computing, now we will proceed by giving instructions to start such machines using QEMU/KVM and we will run some benchmarks to measure how these technlogies impact performance.
+
+
+\section{Benchmarks}
+
+We are running three distinct kinds of benchmarks: Compilation, Memory Benchmarks and I/O benchmarks to evaluate whether using the aforementioned confidential technology incurs in some overhead. To run the benchmarks we are using rcastellotti/tinyben \cite{tinyben}, an experimental benchmarking tool aimed to replace the popular Phoronix Test Suite \cite{pts} benchmarking suite.
+
+\begin{description}
+    \item[Compilation Benchmarks] We are using compilation as an all-around benchmark because it is a "real world" benchmark. We are compiling some popular opensource tools like \href{https://github.com/godotengine/godot}{Godot Game Engine}, \href{https://github.com/imagemagick/imagemagick}{ImageMagick} (using gcc), \href{https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git}{Linux} (defconfig), the entire \href{https://github.com/llvm/llvm-project}{LLVM Project} (using ninja) and measuring how long does it take to complete the compilation process.
+    \item[Memory Benchmarks] To bechmark memory we are using ssvb/tinymembench \cite{tinymembench}, a tool to measure memory throughput and latency, we are mainly interested in bandwidth for the \texttt{MEMCPY} and \texttt{MEMSET} operations
+    \item[I/O Benchmarks] 
+\end{description}
+\subsection{}
+
+
+
+\subsection{Memory Benchmarks}
+
+
+\subsection{I/O Benchmarks}
+
+\begin{table*}
+    \centering
+    \label{tab:tinyben-results}
+    \begin{tabular}{l|l|r}
+        \textbf{benchmark} &       \textbf{SEV} &       \textbf{NOSEV} \\
+    \hline
+    Godot Game Engine compilation (LIB)       &  410 s         & 395 s   \\
+    ImageMagick compilation (gcc) (LIB)       &  70 s          & 69 s \\
+    Linux compilation (defconfig) (LIB)       &  329 s         & 322 s \\
+    llvm-project compilation (ninja) (LIB)    &  774 s         & 733 s  \\
+    sqlite 2500 insertions (LIB)              &  4.106 s       & 4.31 s \\
+    ssvb/tinymembench MEMCPY (HIB)            &  22727.0 MB/s  & 23628.2 MB/s \\
+    ssvb/tinymembench MEMSET (HIB)            &  33170.8 MB/s  & 36367.7 MB/s \\
+    redis-benchmark SET rps (HIB)             &  91911.76      & 110864.74 \\
+    redis-benchmark SET average latency (LIB) &  0.283 ms      & 0.234 ms \\
+    redis-benchmark GET rps (HIB)             &  94339.62      & 110987.79 \\
+    redis-benchmark GET average latency (LIB) &  0.275 ms	   & 0.233 ms \\
+    \end{tabular}
+    \caption{Compiulation, Memory and I/O benchmarks. We are using compilation as an all-around technique to benchmark a system because it is a "real world" benchmark. We are compiling some popular opensource tools like \href{https://github.com/godotengine/godot}{Godot Game Engine}, \href{https://github.com/imagemagick/imagemagick}{ImageMagick} (using gcc), \href{https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git}{linux} (defconfig), the entire \href{https://github.com/llvm/llvm-project}{LLVM Project} (using ninja)}. To benchmark 
+\end{table*}
+
+\begin{table*}
+    \centering
+    \label{tab:iops-results}
+    \begin{tabular}{|l|l|r|}
+        \hline
+        group &       name &       result \\
+        \hline
+        mixread &  blk-nosev & 24324.394544 \\
+        mixread &    blk-sev & 19608.347670 \\
+        mixread & nvme-nosev & 16936.555110 \\
+        mixread &   nvme-sev & 16221.782178 \\
+        mixread & scsi-nosev & 23418.259782 \\
+        mixread &   scsi-sev & 21283.104652 \\
+        mixwrite &  blk-nosev & 22876.690811 \\
+        mixwrite &    blk-sev & 19261.131521 \\
+        mixwrite & nvme-nosev & 15671.907694 \\ 
+        mixwrite &   nvme-sev & 13144.662288 \\
+        mixwrite & scsi-nosev & 22213.710702 \\
+        mixwrite &   scsi-sev & 18586.500284 \\
+        randread &  blk-nosev & 24786.686838 \\
+        randread &    blk-sev & 19354.991140 \\
+        randread & nvme-nosev & 16517.169681 \\
+        randread &   nvme-sev & 13646.936332 \\
+        randread & scsi-nosev & 24944.714055 \\
+        randread &   scsi-sev & 20894.627770 \\
+        randwrite &  blk-nosev & 23045.626374 \\
+        randwrite &    blk-sev & 18642.013938 \\
+        randwrite & nvme-nosev & 16179.730897 \\
+        randwrite &   nvme-sev & 14074.845638 \\
+        randwrite & scsi-nosev & 22775.325804 \\
+        randwrite &   scsi-sev & 19140.186916 \\
+        \hline  
+    \end{tabular}
+    \caption{Experiment environment}
+\end{table*}
+
+\begin{table*}
+    \centering
+    \label{tab:al-results}
+    \begin{tabular}{|l|l|r|}
+    \hline
+        group &       name &       result \\
+    \hline
+    randread &  blk-nosev & 36732.676746 \\
+    randread &    blk-sev & 44428.919037 \\
+    randread & nvme-nosev & 43056.001194 \\
+    randread &   nvme-sev & 43182.237293 \\
+    randread & scsi-nosev & 37267.866497 \\
+    randread &   scsi-sev & 44158.765942 \\
+    randwrite &  blk-nosev & 39318.967918 \\
+    randwrite &    blk-sev & 42268.305611 \\
+    randwrite & nvme-nosev & 40921.898750 \\
+    randwrite &   nvme-sev & 48371.563309 \\
+    randwrite & scsi-nosev & 40428.971912 \\
+    randwrite &   scsi-sev & 47231.466854 \\
+        read &  blk-nosev & 34110.888638 \\
+        read &    blk-sev & 40344.405910 \\
+        read & nvme-nosev & 39693.322182 \\
+        read &   nvme-sev & 37262.537930 \\
+        read & scsi-nosev & 35575.824402 \\
+        read &   scsi-sev & 40626.232517 \\
+        write &  blk-nosev & 37879.406013 \\
+        write &    blk-sev & 41905.050934 \\
+        write & nvme-nosev & 51967.809612 \\
+        write &   nvme-sev & 46775.977871 \\
+        write & scsi-nosev & 40000.623734 \\
+        write &   scsi-sev & 45465.357731 \\    
+    \hline
+    \end{tabular}
+    \caption{Experiment environment}
+\end{table*}
+
+\begin{table*}
+    \centering
+    \label{tab:bw-results}
+    \begin{tabular}{|l|l|r|}
+    \hline
+        group &       name &       result \\
+    \hline
+    read &  blk-nosev & 2068866712 \\
+    read &    blk-sev &  829144265 \\
+    read & nvme-nosev & 2255760134 \\
+    read &   nvme-sev & 1483068817 \\
+    read & scsi-nosev & 2644684295 \\
+    read &   scsi-sev &  732429620 \\
+    write &  blk-nosev & 2010752479 \\
+    write &    blk-sev & 1398101333 \\
+    write & nvme-nosev & 1664716006 \\
+    write &   nvme-sev & 1518729595 \\
+    write & scsi-nosev & 1913978295 \\
+    write &   scsi-sev & 1416545941 \\
+    \hline
+    \end{tabular}
+    \caption{Experiment environment}
+\end{table*}
+
+
+
 
 \printbibliography
 \appendix

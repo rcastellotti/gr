@@ -1,4 +1,5 @@
-# GR - Evaluating Confidential Computing with Unikernels
+# GR - AMD Confidential Computing Technologies Evaluation Report
+
 
 ## Prepare the host toolchain
 Compile the custom OVMF and QEMU provided by AMD:

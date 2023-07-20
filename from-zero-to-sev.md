@@ -57,7 +57,6 @@ AVG	Method: MCBLOCK	Elapsed: 0.09631	MiB: 1024.00000	Copy: 10632.322 MiB/s
 
 - https://www.amd.com/system/files/documents/using-amd-secure-encrypted-virtualization-encrypted-state-on-think-system-servers.pdf
 - https://documentation.suse.com/sles/15-SP1/html/SLES-amd-sev/art-amd-sev.html
-- https://help.ovhcloud.com/csm/en-dedicated-servers-amd-sme-sev?id=kb_article_view&sysparm_article=KB0044018
 - https://documentation.suse.com/de-de/sles/15-SP4/html/SLES-all/article-amd-sev.html#table-guestpolicy
 - http://www.linux-kvm.org/downloads/lersek/ovmf-whitepaper-c770f8c.txt
 - https://cloud.google.com/docs/security/encryption/default-encryption
@@ -69,7 +68,6 @@ AVG	Method: MCBLOCK	Elapsed: 0.09631	MiB: 1024.00000	Copy: 10632.322 MiB/s
 - https://cdrdv2.intel.com/v1/dl/getContent/690419
 - https://www.amd.com/content/dam/amd/en/documents/developer/sev-tio-whitepaper.pdf
 - https://www.amd.com/content/dam/amd/en/documents/developer/58207-using-sev-with-amd-epyc-processors.pdf
-- https://www.amd.com/system/files/TechDocs/40332.pdf
 - https://www.amd.com/system/files/TechDocs/cloud-security-epyc-hardware-memory-encryption.pdf
 - cpuid and some other interesting demos: https://blogs.oracle.com/linux/post/using-amd-secure-memory-encryption-with-oracle-linux
 - https://jcadden.medium.com/confidential-computing-with-kubernetes-sev-guest-protection-for-kata-containers-8f29f0a3a2d7
