@@ -1,6 +1,4 @@
-Encryption at rest (designed to prevent the attacker from accessing the unencrypted data by ensuring the data is encrypted when on disk from Microsoft, cite properly) has been around for a long time, but this leaves a big part of daily computing unencrypted, namely RAM and CPU registers, to tackle this issue major chip producers started to develop a technlogy to enable "confidential computing", namely AMD Secure Encrypted Virtualization (SEV) and Intel Trusted Domain Extensions (TDX). In this short article we try to understand a little more about AMD SEV, assuming nothing and getting our hands dirty step by step.
-
-
+Encryption at rest (designed to prevent the attacker from accessing the unencrypted data by ensuring the data is encrypted when on disk from Microsoft, cite properly) has been around for a long time, but this leaves a big part of daily computing unencrypted, namely RAM and CPU registers, to tackle this issue major chip producers started to develop a technlogy to enable "confidential computing", namely AMD Secure Encrypted Virtualization (SEV) and Intel Trusted Domain Extensions (TDX).
 
 
 - https://www.amd.com/system/files/documents/using-amd-secure-encrypted-virtualization-encrypted-state-on-think-system-servers.pdf
@@ -33,7 +31,3 @@ https://projectacrn.github.io/latest/developer-guides/hld/virtio-blk.html
 https://linux-kernel-labs.github.io/refs/heads/master/labs/block_device_drivers.html
 https://qemu-project.gitlab.io/qemu/system/devices/nvme.html
 https://www.qemu.org/2020/09/14/qemu-storage-overview/
-
-
-
-add fioooooo
