@@ -56,12 +56,6 @@ sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./sev.sh
 - NOSEV machine: connect using ssh `ssh -p 2223 ubuntu@localhost`
 
 ### Useful links
-- Sample cloud-config and network-config for cloud-init can be found [here](https://gist.github.com/itzg/2577205f2036f787a2bd876ae458e18e).
-- Additional options of the cloud-config, such as running a specific command during initialization, can be found [here](https://www.digitalocean.com/community/tutorials/how-to-use-cloud-config-for-your-initial-server-setup)
-- AMD [host kernels](https://github.com/AMDESE/linux) -- check branch names for each feature (e.g., SEV, ES, SNP)
+- [Canonical cloud-init documentation](https://cloudinit.readthedocs.io/en/latest/reference/examples.html)
 - [QEMU](https://github.com/AMDESE/qemu) provided by AMD
-- [OVMF](https://github.com/AMDESE/ovmf) provided by AMD
-
-
-
-remembver to launch benches with sudo
+- [OVMF](https://github.com/AMDESE/ovmf)
