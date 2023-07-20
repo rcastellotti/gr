@@ -59,3 +59,9 @@ sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./sev.sh
 - [Canonical cloud-init documentation](https://cloudinit.readthedocs.io/en/latest/reference/examples.html)
 - [QEMU](https://github.com/AMDESE/qemu) provided by AMD
 - [OVMF](https://github.com/AMDESE/ovmf)
+- <http://www.linux-kvm.org/downloads/lersek/ovmf-whitepaper-c770f8c.txt>
+- <https://www.kernel.org/doc/html/v5.6/virt/kvm/amd-memory-encryption~.html>
+- <https://www.qemu.org/docs/master/system/i386/amd-memory-encryption.html>
+- <https://www.amd.com/content/dam/amd/en/documents/developer/58207-using-sev-with-amd-epyc-processors.pdf>
+- <https://www.amd.com/en/developer/sev.html>
+
