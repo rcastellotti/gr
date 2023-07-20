@@ -5,39 +5,6 @@ OVMF is a project maintanied by TianoCore aiming to enable UEFI support for virt
 
 QEMU is a generic open source machine emulator and virtualizer, we will use QEMU toghether with KVM, the Kernel Virtual machine to virtualize our machines.
 
-
-It is now our interest to run some benchmarks to understand if and how this tecnhlogies impact the performance of machines, we will run 3 categories of micro-benchmarks: cpu-based benchmarks (compiling some popular open source projects and running the LZ4 compression and decompression algorithm), memory-related benchmarks (TinyMembench and MBW) and I/O related benchmarks (time to perform a number of insertions in a SQLite database and Redis Benchmark)
-
-
-SEV: 
-Linux compilation (defconfig):  357.29826259613037 s   
-SQlite 2500 insertions: 3.213946580886841 s   
-Mbw:
-
-```console
-ubuntu@sev:~/tinyben/results$ cat mbw-2023-06-19-10\:45\:04.txt 
-Long uses 8 bytes. Allocating 2*134217728 elements = 2147483648 bytes of memory.
-Using 262144 bytes as blocks for memcpy block copy test.
-Getting down to business... Doing 10 runs per test.
-AVG     Method: MEMCPY  Elapsed: 0.05567        MiB: 1024.00000 Copy: 18394.207 MiB/
-AVG     Method: DUMB    Elapsed: 0.18993        MiB: 1024.00000 Copy: 5391.466 MiB/s
-AVG     Method: MCBLOCK Elapsed: 0.10281        MiB: 1024.00000 Copy: 9959.849 MiB/s
-```
-
-NOSEV:
-Linux compilation (defconfig): 319.93260073661804 s
-SQLite 2500 insertions: 3.0814554691314697 s         
-  
-
-```console
-Getting down to business... Doing 10 runs per test.
-AVG	Method: MEMCPY	Elapsed: 0.05345	MiB: 1024.00000	Copy: 19159.418 MiB/s
-AVG	Method: DUMB	Elapsed: 0.19166	MiB: 1024.00000	Copy: 5342.700 MiB/s
-AVG	Method: MCBLOCK	Elapsed: 0.09631	MiB: 1024.00000	Copy: 10632.322 MiB/s
-```
-
-## References
-
 - https://www.amd.com/system/files/documents/using-amd-secure-encrypted-virtualization-encrypted-state-on-think-system-servers.pdf
 - https://documentation.suse.com/sles/15-SP1/html/SLES-amd-sev/art-amd-sev.html
 - https://documentation.suse.com/de-de/sles/15-SP4/html/SLES-all/article-amd-sev.html#table-guestpolicy
@@ -57,12 +24,6 @@ AVG	Method: MCBLOCK	Elapsed: 0.09631	MiB: 1024.00000	Copy: 10632.322 MiB/s
 - https://www.qemu.org/docs/master/system/i386/amd-memory-encryption.html
 - https://www.amd.com/system/files/TechDocs/58019-svsm-draft-specification.pdf
 
-## investigating I/O related perfomance
-
-benchmark they ran: fio randread bs=4k iodepth=1 numjobs=1
-
-
-First of all, what the heck is a block device?
 
 Block devices are characterized by random access to data organized in fixed-size blocks. Examples of such devices are hard drives, CD-ROM drives, RAM disks, etc. The speed of block devices is generally much higher than the speed of character devices, and their performance is also important.
 
@@ -89,9 +50,6 @@ Virtio-SCSI provides the ability to connect directly to SCSI LUNs and significan
 Designed to replace virtio-blk, virtio-scsi retains virtio-blk’s performance advantages while improving storage scalability, allowing access to multiple storage devices through a single controller, and enabling reuse of the guest operating system’s SCSI stack.
 
 
-
-
-
 https://www.linux-kvm.org/page/Virtio
 https://www.ovirt.org/develop/release-management/features/storage/virtio-scsi.html
 https://www.qemu.org/2021/01/19/virtio-blk-scsi-configuration/
@@ -100,23 +58,6 @@ https://linux-kernel-labs.github.io/refs/heads/master/labs/block_device_drivers.
 https://qemu-project.gitlab.io/qemu/system/devices/nvme.html
 https://www.qemu.org/2020/09/14/qemu-storage-overview/
 
-
-
-We divide 
-
-● Emulation (Full Virtualization)
-○ Best option for correctness and abstraction
-○ High performance cost
-● Paravirtualization
-○ Optimize driver and virtual device interaction
-○ Guest is “aware” of virtualization
-● Pass-Through Mode
-○ Best option for performance
-○ Strong coupling with hardware
-
-https://compas.cs.stonybrook.edu/~nhonarmand/courses/sp17/cse506/slides/io_virtualization.pdf
-
-
 virtio-blk with iothread and userspace driver: By offloading I/O processing to a separate thread and utilizing a userspace driver, you can achieve enhanced performance and efficiency for disk operations in the virtual machine.
 
 ahci: AHCI (Advanced Host Controller Interface) is an interface specification for SATA (Serial ATA) host controllers. QEMU can emulate AHCI controllers to provide SATA disk support for virtual machines.
@@ -124,12 +65,5 @@ ahci: AHCI (Advanced Host Controller Interface) is an interface specification fo
 virtio-blk: virtio-blk is another virtualization standard that provides a disk interface for virtual machines. It allows the virtual machine to communicate with virtual disks using the virtio framework, providing good performance and flexibility.
 
 virtio-scsi: virtio-scsi is a virtualization standard that provides a high-performance, lightweight, and efficient interface for storage devices in virtual machines. It allows virtual machines to directly communicate with SCSI devices using the virtio framework.
-
-
-vfio-pci device assignment: VFIO (Virtual Function I/O) is a framework that allows direct device assignment to virtual machines. VFIO enables bypassing the QEMU emulation layer and providing direct access to the hardware for improved performance and compatibility. VFIO can be used with devices like GPUs, network adapters, and storage controllers.
-
-QEMU emulated devices: QEMU provides emulation for a wide range of devices, including network devices (e.g., Intel e1000, virtio-net), storage devices (e.g., IDE, SCSI), graphics devices (e.g., VGA, QXL), sound devices, input devices (e.g., keyboard, mouse), and more. These emulated devices allow virtual machines to interact with virtualized hardware.
-
-QEMU virtio IOThread: QEMU provides an IOThread option for virtio devices, such as virtio-net (network) and virtio-scsi (storage). IOThread allows offloading the device I/O processing to a separate thread, improving performance by leveraging multiple CPU cores.
 
 QEMU userspace NVMe driver: QEMU includes a userspace NVMe driver that enables virtual machines to interact with NVMe (Non-Volatile Memory Express) storage devices. This driver allows for efficient I/O operations and high-performance access to NVMe devices from within the virtual machine.
