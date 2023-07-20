@@ -17,16 +17,15 @@
 TODO:
 \begin{itemize}
     \item change kernel version
-    % \item update my repository to use the same scripts I am using in tum-dse/cvm_evaluate
-    % \item license for code?
-    % \item cite https://github.com/AMDESE/AMDSEV (got qemu commands from here)
-    % bios configuration
-    % kernel stuff
+    \item update my repository to use the same scripts I am using in tum-dse/cvm\_evaluate
+    \item license for repository?
+    \item bios configuration
+    \item kernel isse masa solved, should we mention it?
 \end{itemize}
 
 \begin{abstract}
-    Confidential Computing is a topic that started to become relevant in the last 20 years. In the last two decades the way software is shipped to production changed radically, almost everyone now uses cloud providers (Google Cloud Platform, Amazon Web Services, Microsoft Azure, etc.). This leads to customers running their code on machines they don't own. It is logic customers want to be sure no one can access their disks, memory or CPU registers, not other customers running virtual machines on the same hardware, nor whoever is controlling the hypervisor be it  the cloud vendor  or, in worst case scenarios, malign actors who compromised the physical machines. Encryption at rest (designed to prevent the attacker from accessing the unencrypted data by ensuring the data is encrypted when on disk from Microsoft, cite properly) has been around for a long time, but this leaves a big part of daily computing unencrypted, namely RAM and CPU registers, to tackle this issue major chip producers started to develop a technlogy to enable "confidential computing", namely AMD Secure Encrypted Virtualization (SEV) and Intel Trusted Domain Extensions (TDX).
-
+    Confidential Computing is a topic that started to become relevant in the last 20 years. In the last two decades the way software is shipped to production changed radically, almost everyone now uses cloud providers (Google Cloud Platform, Amazon Web Services, Microsoft Azure, etc.). This leads to customers running their code on machines they don't own. It is logic customers want to be sure no one can access their disks, memory or CPU registers, not other customers running virtual machines on the same hardware, nor whoever is controlling the hypervisor be it  the cloud vendor  or, in worst case scenarios, malign actors who compromised the physical machines. Encryption at rest (designed to prevent the attacker from accessing the unencrypted data by ensuring the data is encrypted when on disk from Microsoft, cite properly) has been around for a long time, and is currently supported by all major providers \cite{aws-enc}, \cite{gcp-enc}, \cite{azure-enc} but this leaves a big part of daily computing unencrypted, namely RAM and CPU registers, to tackle this issue major chip producers started to develop a technlogy to enable "confidential computing", 
+    namely AMD Secure Encrypted Virtualization (SEV) \cite{memory-encryption}, Intel Trusted Domain Extensions (TDX) \cite{tdx} and Arm Confidential Compute Architecture (CCA) \cite{cca}
 
     We report a preliminary performance evaluation of AMD SEV (Secure Environment Virtualization) technologies.
     We run our experiments on ryan, using a patched version of QEMU from AMD. We use QEMU/KVM as a hypervisor. We assign the guest the same amount of CPUs (16) and 16G of memory. Further details about our environment can be found in section \ref{sec:environment}
@@ -41,8 +40,8 @@ TODO:
         \hline
         Host CPU      & \texttt{AMD EPYC 7713P 64-Cores}                                            \\
         Host Memory   & \texttt{HMAA8GR7AJR4N-XN (Hynix) 3200MHz 64 GB $\times$ 8 (512GB)}          \\
-        Host Kernel   & \texttt{6.1.0-rc4 \#1-NixOS SMP PREEMPT\_DYNAMIC (NixOS 22.11)}             \\
-        QEMU          & \texttt{7.2.0 (AMD) (patched)}                                              \\
+        Host Kernel   & \texttt{6.3.0-rc2 \#1-NixOS SMP PREEMPT\_DYNAMIC (NixOS 23.05)}             \\
+        QEMU          & \texttt{8.0.0 (AMD) (patched)}                                              \\
         OVMF          & \texttt{Stable 202211 (patched)}                                            \\
         Guest vCPUs   & \texttt{16}                                                                 \\
         Guest Memory  & \texttt{16GB}                                                               \\
@@ -160,6 +159,10 @@ We now introduced every part of AMD's effort to popularize Confidential Computin
 
 
 \section{Environment}
+
+\begin{itemize}
+    \item mention we need uefi and this is why we have ovmf
+\end{itemize}
 \label{sec:environment}
 OVMF is a project maintanied by TianoCore aiming to enable UEFI support for virtual machines, it is based on EDK 2, we will use OVMF to generate the executable firmware and the non-volatile variable store, it is important to create a vm-specific cody of OVMF\_vars.fd because the variable store should be private for every virtual machine
 
@@ -208,6 +211,22 @@ We ran some additional benchmarks regarding the different storage virtualization
 \end{description}
 
 We perform some measurements using the fio \cite{fio} benchmarking tool, we use the same measurements used in \cite{spool} to evaluate: bandwidth, average latency and IOPS, we use the \texttt{--direct=1} flag to use unbuffered I/O.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\columnwidth]{img/bw.png}
+    \caption{Storage Bandwidth Benchmarks}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=1\columnwidth]{img/al.png}
+    \caption{Average Latency}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=1\columnwidth]{img/iops.png}
+    \caption{I/O operations per second benchmark}
+\end{figure}
 
 
 \section{Future Work}

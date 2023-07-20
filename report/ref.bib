@@ -75,28 +75,24 @@
   series    = {USENIX ATC'20}
 }
 
-
-
 @online{aws-enc,
   author  = {Amazon Web Services},
   title   = {Encryption of Data at Rest},
   url     = {https://docs.aws.amazon.com/whitepapers/latest/efs-encrypted-file-systems/encryption-of-data-at-rest.html},
   urldate = {2023-07-07}
 }
-@online{gcp-azure,
+@online{azure-enc,
   author  = {Microsoft Azure},
   title   = {Azure Data Encryption at rest},
   url     = {https://learn.microsoft.com/en-us/azure/security/fundamentals/encryption-atrest},
   urldate = {2023-07-07}
-
 }
-@online{aws-enc,
+@online{gcp-enc,
   author  = {Google Cloud Platform},
   title   = {Default encryption at rest},
   url     = {https://cloud.google.com/docs/security/encryption/default-encryption},
   urldate = {2023-07-07}
 }
-
 
 @online{tdx,
   author  = {Intel®},
@@ -112,3 +108,23 @@
   urldate = {2023-07-07}
 }
 
+@inproceedings{qemu,
+author = {Bellard, Fabrice},
+title = {QEMU, a Fast and Portable Dynamic Translator},
+year = {2005},
+publisher = {USENIX Association},
+address = {USA},
+abstract = {We present the internals of QEMU, a fast machine emulator using an original portable dynamic translator. It emulates several CPUs (x86, PowerPC, ARM and Sparc) on several hosts (x86, PowerPC, ARM, Sparc, Alpha and MIPS). QEMU supports full system emulation in which a complete and unmodified operating system is run in a virtual machine and Linux user mode emulation where a Linux process compiled for one target CPU can be run on another CPU.},
+booktitle = {Proceedings of the Annual Conference on USENIX Annual Technical Conference},
+pages = {41},
+numpages = {1},
+location = {Anaheim, CA},
+series = {ATEC '05}
+}
+
+@online{ovmf,
+  author  = {Tianocore's EDK II project.},
+  title   = {Open Virtual Machine Firmware (OVMF)},
+  url     = {http://www.linux-kvm.org/downloads/lersek/ovmf-whitepaper-c770f8c.txt},
+  urldate = {2023-07-07}
+}
