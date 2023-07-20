@@ -13,36 +13,39 @@
 \title{\Large \bf AMD Confidential Computing Technologies Evaluation Report}
 \author{{\rm Roberto Castellotti}\\TU Munich \and {\rm Masnori Misono}\\TU Munich}
 \maketitle
-
+% https://github.com/TUM-DSE/research-work-info/tree/master/thesis-report
 TODO:
 \begin{itemize}
     \item change kernel version
-    \item cite https://github.com/AMDESE/AMDSEV (got qemu commands from here)
-    \item add BIOS configuration
-    \item do i need to add instructions to launch machines here in the report or should I just link to the project's README?
-    \item in SEV-ES it seems like VMRUN and VMEXIT need to perform some additional tasks, can we benchmark this in some way?
-    \item describe different storage virtualization techniques
+    % \item update my repository to use the same scripts I am using in tum-dse/cvm_evaluate
+    % \item license for code?
+    % \item cite https://github.com/AMDESE/AMDSEV (got qemu commands from here)
+    % bios configuration
+    % kernel stuff
 \end{itemize}
 
 \begin{abstract}
-    Confidential Computing is a topic that started to become relevant in the last 10 years. In these years the way software is shipped to production changed radically, almost everyone now uses cloud providers (Google Cloud Platform, Amazon Web Services, Microsoft Azure, etc.). This leads to customers running their code on machines they don't own. It is logic that they want to be sure no one can access their disks, memory or CPU registers, not other customers running virtual machines on the same hardware, nor whoever is controlling the hypervisor. Normally the Hypervisor is controlled by the cloud vendor and clients can assume a benign apporach, but in worst case scenarios malign actors who compromised the physical machines might be those in control.
-    \par
-    We report a preliminary performance evaluation of AMD SEV (Secure Environment Virtualization) technlogies.
-    We run our experiments on ryan, we using a patched version of QEMU from AMD. We use QEMU/KVM as a hypervisor. We assign the guest the same amount of CPUs (16) and 16G of memory.    
+    Confidential Computing is a topic that started to become relevant in the last 20 years. In the last two decades the way software is shipped to production changed radically, almost everyone now uses cloud providers (Google Cloud Platform, Amazon Web Services, Microsoft Azure, etc.). This leads to customers running their code on machines they don't own. It is logic customers want to be sure no one can access their disks, memory or CPU registers, not other customers running virtual machines on the same hardware, nor whoever is controlling the hypervisor be it  the cloud vendor  or, in worst case scenarios, malign actors who compromised the physical machines. Encryption at rest (designed to prevent the attacker from accessing the unencrypted data by ensuring the data is encrypted when on disk from Microsoft, cite properly) has been around for a long time, but this leaves a big part of daily computing unencrypted, namely RAM and CPU registers, to tackle this issue major chip producers started to develop a technlogy to enable "confidential computing", namely AMD Secure Encrypted Virtualization (SEV) and Intel Trusted Domain Extensions (TDX).
+
+
+    We report a preliminary performance evaluation of AMD SEV (Secure Environment Virtualization) technologies.
+    We run our experiments on ryan, using a patched version of QEMU from AMD. We use QEMU/KVM as a hypervisor. We assign the guest the same amount of CPUs (16) and 16G of memory. Further details about our environment can be found in section \ref{sec:environment}
+
 \end{abstract}
+
 
 \begin{table*}
     \centering
     \label{tab:experiment-environment}
-    \begin{tabular}{l|l   }
+    \begin{tabular}{l|l}
         \hline
-        Host CPU      & \texttt{AMD EPYC 7713P 64-Cores} \\
-        Host Memory   & \texttt{HMAA8GR7AJR4N-XN (Hynix) 3200MHz 64 GB $\times$ 8 (512GB)} \\
-        Host Kernel   & \texttt{6.1.0-rc4 \#1-NixOS SMP PREEMPT\_DYNAMIC (NixOS 22.11)} \\
-        QEMU          & \texttt{7.2.0 (AMD) (patched)} \\
-        OVMF          & \texttt{Stable 202211 (patched)} \\
-        Guest vCPUs   & \texttt{16} \\
-        Guest Memory  & \texttt{16GB}  \\
+        Host CPU      & \texttt{AMD EPYC 7713P 64-Cores}                                            \\
+        Host Memory   & \texttt{HMAA8GR7AJR4N-XN (Hynix) 3200MHz 64 GB $\times$ 8 (512GB)}          \\
+        Host Kernel   & \texttt{6.1.0-rc4 \#1-NixOS SMP PREEMPT\_DYNAMIC (NixOS 22.11)}             \\
+        QEMU          & \texttt{7.2.0 (AMD) (patched)}                                              \\
+        OVMF          & \texttt{Stable 202211 (patched)}                                            \\
+        Guest vCPUs   & \texttt{16}                                                                 \\
+        Guest Memory  & \texttt{16GB}                                                               \\
         Guest Kernel  & \texttt{5.19.0-41-generic \#42-Ubuntu SMP PREEMPT\_DYNAMIC (Ubuntu 22.10 )} \\ 
         \hline
     \end{tabular}
@@ -87,7 +90,7 @@ AMD Secure Encryption (0x8000001f):
     VTE: SEV virtual transparent encryption  = true
     VMSA register protection                 = true
     encryption bit position in PTE           = 0x33 (51)
-    physical address space width reduction   = 0x5 (5)
+    physical address space width reduction   = 0x5 (5)    
     number of VM permission levels           = 0x4 (4)
     number of SEV-enabled guests supported   = 0x1fd (509)
     minimum SEV guest ASID                   = 0x80 (128)
@@ -156,6 +159,12 @@ More details are discussed in the introductory whitepaper \cite{sev-snp}
 We now introduced every part of AMD's effort to popularize Confidential Computing, now we will proceed by giving instructions to start such machines using QEMU/KVM and we will run some benchmarks to measure how these technlogies impact performance.
 
 
+\section{Environment}
+\label{sec:environment}
+OVMF is a project maintanied by TianoCore aiming to enable UEFI support for virtual machines, it is based on EDK 2, we will use OVMF to generate the executable firmware and the non-volatile variable store, it is important to create a vm-specific cody of OVMF\_vars.fd because the variable store should be private for every virtual machine
+
+QEMU is a generic open source machine emulator and virtualizer, we will use QEMU toghether with KVM, the Kernel Virtual machine to virtualize our machines.
+
 \section{Benchmarks}
 
 We are running three distinct kinds of benchmarks: Compilation, Memory Benchmarks and I/O benchmarks to evaluate whether using the aforementioned confidential technology incurs in some overhead. To run the benchmarks we are using rcastellotti/tinyben \cite{tinyben}, an experimental benchmarking tool aimed to replace the popular Phoronix Test Suite \cite{pts} benchmarking suite.
@@ -166,136 +175,48 @@ We are running three distinct kinds of benchmarks: Compilation, Memory Benchmark
     \item[I/O Benchmarks] To measure I/O performance we are running two different benchmarks, first we are performing 2500 sqlite insertions in a table, then we are running redis-benchmark, a tool shipped toghether with redis. We are interested in Requests per Second and latency for the main operations. 
 \end{description}
 
-\subsection{}
-
-\subsection{Memory Benchmarks}
-
-
-\subsection{I/O Benchmarks}
-
 \begin{table*}
     \centering
     \label{tab:tinyben-results}
-    \begin{tabular}{l|l|r}
-        \textbf{benchmark} &       \textbf{SEV-SNP} &       \textbf{NOSEV} \\
+    \begin{tabular}{l|r|r}
+    \textbf{benchmark}                        & \textbf{SEV-SNP} & \textbf{NOSEV} \\
     \hline
-    Godot Game Engine compilation (LIB)       &  410 sec         & 395 sec  \\
-    ImageMagick compilation (gcc) (LIB)       &  70 sec          & 69 sec \\
-    Linux compilation (defconfig) (LIB)       &  329 sec         & 322 sec \\
-    LLVM Project compilation (ninja) (LIB)    &  774 sec         & 733 sec  \\
-    Sqlite 2500 insertions (LIB)              &  4.106 sec       & 4.31 sec \\
-    ssvb/tinymembench MEMCPY (HIB)            &  22727.0 MB/s  & 23628.2 MB/s \\
-    ssvb/tinymembench MEMSET (HIB)            &  33170.8 MB/s  & 36367.7 MB/s \\
-    redis-benchmark SET RPS (HIB)             &  91911.76      & 110864.74 \\
-    redis-benchmark SET average latency (LIB) &  0.283 msec      & 0.234 msec \\
-    redis-benchmark GET RPS (HIB)             &  94339.62      & 110987.79 \\
-    redis-benchmark GET average latency (LIB) &  0.275 msec	   & 0.233 msec \\
+    Godot Game Engine compilation (LIB)       &  410 sec         & 395 sec        \\
+    ImageMagick compilation (gcc) (LIB)       &  70 sec          & 69 sec         \\
+    Linux compilation (defconfig) (LIB)       &  329 sec         & 322 sec        \\
+    LLVM Project compilation (ninja) (LIB)    &  774 sec         & 733 sec        \\
+    Sqlite 2500 insertions (LIB)              &  4.106 sec       & 4.31 sec       \\
+    ssvb/tinymembench MEMCPY (HIB)            &  22727.0 MB/s    & 23628.2 MB/s   \\
+    ssvb/tinymembench MEMSET (HIB)            &  33170.8 MB/s    & 36367.7 MB/s   \\
+    redis-benchmark SET RPS (HIB)             &  91911.76        & 110864.74      \\
+    redis-benchmark SET average latency (LIB) &  0.283 msec      & 0.234 msec     \\
+    redis-benchmark GET RPS (HIB)             &  94339.62        & 110987.79      \\
+    redis-benchmark GET average latency (LIB) &  0.275 msec	     & 0.233 msec     \\
     \end{tabular}
     \caption{Comparing benchmark results run on two QEMU vms (16 vCPUs, 16GB ram, virtio-scsi storage). HIB and LIB mean respectively "Higher is Better" and "Lower is Better", RPS stands for "Requests Per Second"} 
 \end{table*}
 
 As we can see in table \ref{tab:tinyben-results} the overhead introduced by the usage of Confidential Computing technology across the three categories of benchmarks is generally mild, and negligible in certain cases (ImageMagick compilation and Sqlite benchmark), further investigation tweaking the amount of resources available to each machine is necessary to correcly esteem the exact performance degradation values.
-\begin{table*}
-    \centering
-    \label{tab:iops-results}
-    \begin{tabular}{|l|l|r|}
-        \hline
-        group &       name &       result \\
-        \hline
-        mixread &  blk-nosev & 24324.394544 \\
-        mixread &    blk-sev & 19608.347670 \\
-        mixread & nvme-nosev & 16936.555110 \\
-        mixread &   nvme-sev & 16221.782178 \\
-        mixread & scsi-nosev & 23418.259782 \\
-        mixread &   scsi-sev & 21283.104652 \\
-        mixwrite &  blk-nosev & 22876.690811 \\
-        mixwrite &    blk-sev & 19261.131521 \\
-        mixwrite & nvme-nosev & 15671.907694 \\ 
-        mixwrite &   nvme-sev & 13144.662288 \\
-        mixwrite & scsi-nosev & 22213.710702 \\
-        mixwrite &   scsi-sev & 18586.500284 \\
-        randread &  blk-nosev & 24786.686838 \\
-        randread &    blk-sev & 19354.991140 \\
-        randread & nvme-nosev & 16517.169681 \\
-        randread &   nvme-sev & 13646.936332 \\
-        randread & scsi-nosev & 24944.714055 \\
-        randread &   scsi-sev & 20894.627770 \\
-        randwrite &  blk-nosev & 23045.626374 \\
-        randwrite &    blk-sev & 18642.013938 \\
-        randwrite & nvme-nosev & 16179.730897 \\
-        randwrite &   nvme-sev & 14074.845638 \\
-        randwrite & scsi-nosev & 22775.325804 \\
-        randwrite &   scsi-sev & 19140.186916 \\
-        \hline  
-    \end{tabular}
-    \caption{Experiment environment}
-\end{table*}
 
-\begin{table*}
-    \centering
-    \label{tab:al-results}
-    \begin{tabular}{|l|l|r|}
-    \hline
-        group &       name &       result \\
-    \hline
-    randread &  blk-nosev & 36732.676746 \\
-    randread &    blk-sev & 44428.919037 \\
-    randread & nvme-nosev & 43056.001194 \\
-    randread &   nvme-sev & 43182.237293 \\
-    randread & scsi-nosev & 37267.866497 \\
-    randread &   scsi-sev & 44158.765942 \\
-    randwrite &  blk-nosev & 39318.967918 \\
-    randwrite &    blk-sev & 42268.305611 \\
-    randwrite & nvme-nosev & 40921.898750 \\
-    randwrite &   nvme-sev & 48371.563309 \\
-    randwrite & scsi-nosev & 40428.971912 \\
-    randwrite &   scsi-sev & 47231.466854 \\
-        read &  blk-nosev & 34110.888638 \\
-        read &    blk-sev & 40344.405910 \\
-        read & nvme-nosev & 39693.322182 \\
-        read &   nvme-sev & 37262.537930 \\
-        read & scsi-nosev & 35575.824402 \\
-        read &   scsi-sev & 40626.232517 \\
-        write &  blk-nosev & 37879.406013 \\
-        write &    blk-sev & 41905.050934 \\
-        write & nvme-nosev & 51967.809612 \\
-        write &   nvme-sev & 46775.977871 \\
-        write & scsi-nosev & 40000.623734 \\
-        write &   scsi-sev & 45465.357731 \\    
-    \hline
-    \end{tabular}
-    \caption{Experiment environment}
-\end{table*}
+We ran some additional benchmarks regarding the different storage virtualization techniques, more specifically we tested \textbf{virtio-scsi}, 
+\textbf{virtio-blk} and \textbf{nvme} technologies. Virtio is the main platform for IO virtualization in KVM, essentially it provides a common framework for hypervisors to do IO virtualization.
 
-\begin{table*}
-    \centering
-    \label{tab:bw-results}
-    \begin{tabular}{|l|l|r|}
-    \hline
-        group &       name &       result \\
-    \hline
-    read &  blk-nosev & 2068866712 \\
-    read &    blk-sev &  829144265 \\
-    read & nvme-nosev & 2255760134 \\
-    read &   nvme-sev & 1483068817 \\
-    read & scsi-nosev & 2644684295 \\
-    read &   scsi-sev &  732429620 \\
-    write &  blk-nosev & 2010752479 \\
-    write &    blk-sev & 1398101333 \\
-    write & nvme-nosev & 1664716006 \\
-    write &   nvme-sev & 1518729595 \\
-    write & scsi-nosev & 1913978295 \\
-    write &   scsi-sev & 1416545941 \\
-    \hline
-    \end{tabular}
-    \caption{Experiment environment}
-\end{table*}
+\begin{description}
+    \item[nvme] is the userspace NVMe driver that enables virtual machines to interact with NVMe devices
+    \item[virtio-blk] devices are very simple block devices, the frontend driver reads and writes by appending commands to the virtualization queue so that the Backedn driver can process them on the host.
+    \item[virtio-scsi] aims to overcome some limitations introduced by virtio-blk, support more devices per guest (one PCI device per disk is not a limiting factor anymore) and supports technlogies like multiqueueing while keeping the performances of virtio-blk, additionally virtio-scsi provides a passthrough technlogy to present physical storage devices directly to guests
+\end{description}
+
+We perform some measurements using the fio \cite{fio} benchmarking tool, we use the same measurements used in \cite{spool} to evaluate: bandwidth, average latency and IOPS, we use the \texttt{--direct=1} flag to use unbuffered I/O.
 
 
+\section{Future Work}
+in SEV-ES it seems like VMRUN and VMEXIT need to perform some additional tasks, can we benchmark this in some way?
+- https://jcadden.medium.com/confidential-computing-with-kubernetes-sev-guest-protection-for-kata-containers-8f29f0a3a2d7
 
-
-
-
+item sev tio 
+explore coco (chrome bookmarks)
+item sev svsm
 
 \printbibliography
 \appendix
