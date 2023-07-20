@@ -29,6 +29,6 @@ write_files:
       fio --name="al-write" --filename="/mnt/a" --iodepth="1" --rw="write" --size="1G" --bs="4K" --numjobs="1" --runtime="60" --output-format="json"  --direct=1 --output="al_write-$T.json"
 
 runcmd:
-- [temp]
+- [sudo, bash, /run/fio.sh, nosev, scsi]
 
 final_message: "Cloud init is done!"

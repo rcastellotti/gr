@@ -48,9 +48,10 @@ for file in sorted(files):
             res = j["jobs"][0]["read"]["clat_ns"]["mean"]
             print(f"accessing file: {file} and retrieving {res}")
 
+        row=[get_val(file, 0, 1), os.path.splitext(get_val(file, 1, 3))[0], res]
         if "bw" in file:
-            bw_results.writerow([get_val(file, 0, 1), get_val(file, 1, 3), res])
+            bw_results.writerow(row)
         elif "iops" in file:
-            iops_results.writerow([get_val(file, 0, 1), get_val(file, 1, 3), res])
+            iops_results.writerow(row)
         else:
-            al_results.writerow([get_val(file, 0, 1), get_val(file, 1, 3), res])
+            al_results.writerow(row)

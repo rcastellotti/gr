@@ -1,0 +1,10 @@
+  Benchmark Name                   │ Benchmark Status │ Benchmark Result                              
+ ══════════════════════════════════╪══════════════════╪══════════════════════════════════════════════ 
+  Godot Game Engine compilation    │        ✅        │ 410.0607497692108 s                           
+  ImageMagick compilation (gcc)    │        ✅        │ 70.4945604801178 s                            
+  linux compilation (defconfig)    │        ✅        │ 329.5819802284241 s                           
+  llvm-project compilation (ninja) │        ✅        │ 774.8882703781128 s                           
+  raas/mbw 1024 MiB                │        ✅        │ results/mbw-2023-07-19-21:56:10.txt           
+  redis-benchmark                  │        ✅        │ results/redis-2023-07-19-21:57:40.csv         
+  sqlite 2500 insertions           │        ✅        │ 4.106308460235596 s                           
+  ssvb/tinymembench                │        ✅        │ results/tinymembench-2023-07-19-21:58:21.txt 

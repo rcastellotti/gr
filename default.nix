@@ -21,8 +21,8 @@ mkShell {
     cpuid
     # benchmarking and visualization
     fio
-    jupyter
     python310Packages.seaborn
+    python310Packages.jupyterlab
   ];
   LD_LIBRARY_PATH = lib.makeLibraryPath libraries;
 }

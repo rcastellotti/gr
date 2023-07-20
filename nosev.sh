@@ -11,10 +11,10 @@ fi
 mkdir -p OVMF_files
 
 # prepare the nosev machine
-rm -f nosev.img
-qemu-img convert kinetic-server-cloudimg-amd64.img nosev.img
-qemu-img resize nosev.img +20G
-rm -f cloud-config-nosev.iso
+#rm -f nosev.img
+#qemu-img convert kinetic-server-cloudimg-amd64.img nosev.img
+#qemu-img resize nosev.img +20G
+#rm -f cloud-config-nosev.iso
 
 
 if [ "$1" == "blk" ]; then
@@ -25,7 +25,7 @@ elif [ "$1"=="scsi" ]; then
     device_type="virtio-scsi-pci,id=scsi0,disable-legacy=on,iommu_platform=true"
 fi
 sed -i "s/- \[temp\]/- \[sudo, bash, \/run\/fio.sh, nosev, "$1"\]/" ./config/cloud-config-nosev.yml
-sudo cloud-localds cloud-config-nosev.iso config/cloud-config-nosev.yml
+#sudo cloud-localds cloud-config-nosev.iso config/cloud-config-nosev.yml
 
 ./usr/local/bin/qemu-system-x86_64 \
     -enable-kvm \
