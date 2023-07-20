@@ -29,7 +29,7 @@ sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./nosev.sh ./usr/qemu/usr/bin/
 sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./sev.sh ./usr/qemu/usr/bin/
 ```
 
-## Inside the guest VM, verify that AMD SEV-SNP is enabled:
+## Inside the guest VM, verify SEV-SNP is enabled:
 `sudo dmesg | grep snp -i ` should indicate `Memory Encryption Features active: AMD SEV SEV-ES SEV-SNP`
 
 ## Interact with the machines
