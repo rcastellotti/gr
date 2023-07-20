@@ -14,6 +14,9 @@ elif [ "$1"=="nvme" ]; then
 elif [ "$1"=="scsi" ]; then
     device_type="virtio-scsi-pci,id=scsi0,disable-legacy=on,iommu_platform=true"
 fi
+# rm -f cloud-config-nosev.iso
+# sed -i "s/- \[temp\]/- \[sudo, bash, \/run\/fio.sh, nosev, "$1"\]/" ./config/cloud-config-nosev.yml
+# sudo cloud-localds cloud-config-nosev.iso config/cloud-config-nosev.yml
 
 ./usr/local/bin/qemu-system-x86_64 \
     -enable-kvm \

@@ -1,51 +1,32 @@
 # GR - AMD Confidential Computing Technologies Evaluation Report
 
+## Instructions to launch SEV machines
 
-## Prepare the host toolchain
+### Prepare the host toolchain
 Compile the custom OVMF and QEMU provided by AMD:
 
 ```bash
-./build.sh
+./build.sh <dir>
 ```
 
-## Misc
+### Misc
 
-- You need to have cloud-config file and a network-config file for your VM, similar to those in the [config](.config/) folder.
-- If you wish to have ssh connection to your VMs, you can adapt the cloud-config files and include your ssh keys, so that cloud-init sets them up automatically in the VM. Example cloud-init configurations that include the placeholders for ssh keys can be found in `config/`
-- The [`prepare_net_cfg.sh`](./prepare_net_cfg.sh) script takes as a parameter the virtual bridge where the VMs will be connected to and modifies the IP prefix in the network configuration (given as a secord parameter) appropriately.
+- [config](.config/) folder contains some configurations for ubuntu cloudimg.
 - Download an ubuntu image: `wget https://cloud-images.ubuntu.com/kinetic/current/kinetic-server-cloudimg-amd64.img`
+- before launching guests you should run `./prepare.sh`
 
-## Prepare a NOSEV guest
+This readme assumes ovmf and qemu are in `./usr`, i.e. that you run `./build.sh ./usr`, if that is not the case adapt the following commands to reflect your edit.
 
-```bash
-qemu-img convert kinetic-server-cloudimg-amd64.img nosev.img
-qemu-img resize nosev.img +20G
-mkdir OVMF_files
-sudo cloud-localds cloud-config-nosev.iso config/cloud-config-nosev.yml
-cp ./usr/local/share/qemu/OVMF_CODE.fd ./OVMF_files/OVMF_CODE_nosev.fd
-cp ./usr/local/share/qemu/OVMF_VARS.fd ./OVMF_files/OVMF_VARS_nosev.fd
-```
-## Launch a NOSEV guest. 
+### Launch a NOSEV guest. 
 
 ```bash
-sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./nosev.sh
+sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./nosev.sh ./usr/qemu/usr/bin/
 ```
 
-## Prepare an AMD SEV-SNP guest.
+### Launch an AMD SEV-SNP guest. 
 
 ```bash
-qemu-img convert kinetic-server-cloudimg-amd64.img sev.img
-qemu-img resize sev.img +20G
-mkdir OVMF_files
-sudo cloud-localds cloud-config-sev.iso ./config/cloud-config-sev.yml
-cp ./usr/local/share/qemu/OVMF_CODE.fd ./OVMF_files/OVMF_CODE_sev.fd
-cp ./usr/local/share/qemu/OVMF_VARS.fd ./OVMF_files/OVMF_VARS_sev.fd
-```
-
-## Launch an AMD SEV-SNP guest. 
-
-```bash
-sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./sev.sh
+sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./sev.sh ./usr/qemu/usr/bin/
 ```
 
 ## Inside the guest VM, verify that AMD SEV-SNP is enabled:
@@ -55,7 +36,7 @@ sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./sev.sh
 - SEV machine: connect using ssh `ssh -p 2222 ubuntu@localhost`
 - NOSEV machine: connect using ssh `ssh -p 2223 ubuntu@localhost`
 
-### Useful links
+## misc
 - <https://cloudinit.readthedocs.io/en/latest/reference/examples.html>
 - <https://github.com/AMDESE/linux>
 - <https://github.com/AMDESE/qemu>
