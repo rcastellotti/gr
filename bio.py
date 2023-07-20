@@ -11,10 +11,10 @@ def get_val(string, s, e):
     return result
 
 
-files = os.listdir("io-benchmarks")
-al_results = csv.writer(open("al_results.csv", "a+"))
-bw_results = csv.writer(open("bw_results.csv", "a+"))
-iops_results = csv.writer(open("iops_results.csv", "a+"))
+files = os.listdir("benchmarks")
+al_results = csv.writer(open("benchmarks/al_results.csv", "a+"))
+bw_results = csv.writer(open("benchmarks/bw_results.csv", "a+"))
+iops_results = csv.writer(open("benchmarks/iops_results.csv", "a+"))
 al_results.writerow(["group", "name", "result"])
 bw_results.writerow(["group", "name", "result"])
 iops_results.writerow(["group", "name", "result"])
