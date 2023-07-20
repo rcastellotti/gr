@@ -1,11 +1,6 @@
 Encryption at rest (designed to prevent the attacker from accessing the unencrypted data by ensuring the data is encrypted when on disk from Microsoft, cite properly) has been around for a long time, but this leaves a big part of daily computing unencrypted, namely RAM and CPU registers, to tackle this issue major chip producers started to develop a technlogy to enable "confidential computing", namely AMD Secure Encrypted Virtualization (SEV) and Intel Trusted Domain Extensions (TDX). In this short article we try to understand a little more about AMD SEV, assuming nothing and getting our hands dirty step by step.
 
 
-
-
-
-
-
 OVMF is a project maintanied by TianoCore aiming to enable UEFI support for virtual machines, it is based on EDK 2, we will use OVMF to generate the executable firmware and the non-volatile variable store, it is important to create a vm-specific cody of `OVMF_vars.fd` because the variable store should be private for every virtual machine
 
 QEMU is a generic open source machine emulator and virtualizer, we will use QEMU toghether with KVM, the Kernel Virtual machine to virtualize our machines.
@@ -41,18 +36,6 @@ AVG	Method: DUMB	Elapsed: 0.19166	MiB: 1024.00000	Copy: 5342.700 MiB/s
 AVG	Method: MCBLOCK	Elapsed: 0.09631	MiB: 1024.00000	Copy: 10632.322 MiB/s
 ```
 
-### benchmarks
-
-+ Test different system configs (memory and CPUS)
-+ AMD-ES enabled and disabled only run cpu intensive benchmarks?
-+ Test different machines running at the same time
-
-## todo
-- AMD Secure Encrypted Virtualization-Secure Trusted I/O (SEV-TIO)
-- SEV on containers (kata)
-- bios configuration
-- numa enabled/disabled
-
 ## References
 
 - https://www.amd.com/system/files/documents/using-amd-secure-encrypted-virtualization-encrypted-state-on-think-system-servers.pdf
@@ -66,18 +49,13 @@ AVG	Method: MCBLOCK	Elapsed: 0.09631	MiB: 1024.00000	Copy: 10632.322 MiB/s
 - https://www.amd.com/en/developer/sev.html
 - https://arch.cs.ucdavis.edu/assets/papers/ipdps21-hpc-tee-performance.pdf
 - https://cdrdv2.intel.com/v1/dl/getContent/690419
-- https://www.amd.com/content/dam/amd/en/documents/developer/sev-tio-whitepaper.pdf
 - https://www.amd.com/content/dam/amd/en/documents/developer/58207-using-sev-with-amd-epyc-processors.pdf
 - https://www.amd.com/system/files/TechDocs/cloud-security-epyc-hardware-memory-encryption.pdf
 - cpuid and some other interesting demos: https://blogs.oracle.com/linux/post/using-amd-secure-memory-encryption-with-oracle-linux
 - https://jcadden.medium.com/confidential-computing-with-kubernetes-sev-guest-protection-for-kata-containers-8f29f0a3a2d7
 - https://www.kernel.org/doc/html/v5.6/virt/kvm/amd-memory-encryption~.html
 - https://www.qemu.org/docs/master/system/i386/amd-memory-encryption.html
-
-
 - https://www.amd.com/system/files/TechDocs/58019-svsm-draft-specification.pdf
-
-#### Section 3.2 "BIOS Configurations"
 
 ## investigating I/O related perfomance
 
