@@ -2,9 +2,6 @@ import os
 import json
 import csv
 
-from pprint import pprint
-
-
 def get_val(string, s, e):
     parts = string.split("-", 4)  # Split the string at the first two hyphens
     result = "-".join(parts[s:e])  # Join the first two parts with a hyphen
@@ -43,12 +40,11 @@ for file in sorted(files):
             res = j["jobs"][0]["read"]["bw_bytes"]
             print(f"accessing file: {file} and retrieving {res}")
 
-
         if "read" in file and "al" in file:
             res = j["jobs"][0]["read"]["clat_ns"]["mean"]
             print(f"accessing file: {file} and retrieving {res}")
 
-        row=[get_val(file, 0, 1), os.path.splitext(get_val(file, 1, 3))[0], res]
+        row = [get_val(file, 0, 1), os.path.splitext(get_val(file, 1, 3))[0], res]
         if "bw" in file:
             bw_results.writerow(row)
         elif "iops" in file:
