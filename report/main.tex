@@ -1,16 +1,12 @@
 \documentclass[twocolumn]{article}
 \usepackage{usenix-2020-09}
 \usepackage[backend=biber]{biblatex}
-\usepackage{biblatex}
-% \usepackage{inconsolata}
+\usepackage{inconsolata}
 \usepackage{bookmark}
 \usepackage{minted}
 \usepackage{graphicx}
 \usepackage{float}
-\usepackage{fontspec}
 \bibliography{ref}
-% \usepackage{algolrevived}
-% \usepackage{algolrevived}
 \definecolor{bg}{rgb}{0.97,0.97,0.97}
 
 \begin{document}
@@ -270,13 +266,6 @@ We perform some measurements using the fio \cite{fio} benchmarking tool, we use 
     \caption{bw iops al environment}
 \end{table*}
 
-
-
-% \begin{tabular}{lllr}
-%     \toprule
-%      & group & nam  \bottomrule
-%     \end{tabular}
-
 The benchmarks highlight some interesting patterns: average latency is barely impacted
 
 \section{Future Work}
@@ -290,9 +279,29 @@ Futher performance evaluation for SEV/SEV-ES/SEV-SNP confidential virtual machin
     \item exploring Confidential Containers \cite{coco} project to identify what is worth benchmarking
     \item understand AMD Secure VM Service Module \cite{svsm}, a module to offload sensitive opearations ontto a privileged guest and see if this leads to a performance improvement
 \end{itemize}
-
+\begin{table*}
+    \centering
+    \label{tab:tinyben-results}
+    \begin{tabular}{l|r|r}
+    \textbf{benchmark}                        & \textbf{SEV-SNP} & \textbf{NOSEV} \\
+    \hline
+    Godot Game Engine compilation (LIB)       &  410 sec         & 395 sec        \\
+    ImageMagick compilation (gcc) (LIB)       &  70 sec          & 69 sec         \\
+    Linux compilation (defconfig) (LIB)       &  329 sec         & 322 sec        \\
+    LLVM Project compilation (ninja) (LIB)    &  774 sec         & 733 sec        \\
+    Sqlite 2500 insertions (LIB)              &  4.106 sec       & 4.31 sec       \\
+    ssvb/tinymembench MEMCPY (HIB)            &  22727.0 MB/s    & 23628.2 MB/s   \\
+    ssvb/tinymembench MEMSET (HIB)            &  33170.8 MB/s    & 36367.7 MB/s   \\
+    redis-benchmark SET RPS (HIB)             &  91911.76        & 110864.74      \\
+    redis-benchmark SET average latency (LIB) &  0.283 msec      & 0.234 msec     \\
+    redis-benchmark GET RPS (HIB)             &  94339.62        & 110987.79      \\
+    redis-benchmark GET average latency (LIB) &  0.275 msec	     & 0.233 msec     \\
+    \end{tabular}
+    \caption{Comparing benchmark results run on two QEMU vms (16 vCPUs, 16GB ram, virtio-scsi storage). HIB and LIB mean respectively "Higher is Better" and "Lower is Better", RPS stands for "Requests Per Second"} 
+\end{table*}
 \printbibliography
-\appendix
+% \appendix
+
 \section*{Appendix}
 \section{A simple attack to demo Confidential Computing}
 Let's demo a very simple attack, first of all we start two machines, \textit{sev} and \textit{nosev}, the former has SEV-SNP enabled, as we can check:
