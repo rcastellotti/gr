@@ -60,3 +60,4 @@ sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./sev.sh ./usr/qemu/usr/bin/
 - <https://documentation.suse.com/de-de/sles/15-SP4/html/SLES-all/article-amd-sev.html#table-guestpolicy>
 - <http://www.linux-kvm.org/downloads/lersek/ovmf-whitepaper-c770f8c.txt>
 - <https://www.amd.com/system/files/TechDocs/cloud-security-epyc-hardware-memory-encryption.pdf>
+- <https://jcadden.medium.com/confidential-computing-with-kubernetes-sev-guest-protection-for-kata-containers-8f29f0a3a2d7>
