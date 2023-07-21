@@ -2,25 +2,27 @@
 \usepackage{usenix-2020-09}
 \usepackage[backend=biber]{biblatex}
 \usepackage{biblatex}
-\usepackage{inconsolata}
+% \usepackage{inconsolata}
+\usepackage{bookmark}
 \usepackage{minted}
-\definecolor{bg}{rgb}{0.97,0.97,0.97}
 \usepackage{graphicx}
+\usepackage{float}
+\usepackage{fontspec}
 \bibliography{ref}
+% \usepackage{algolrevived}
+% \usepackage{algolrevived}
+\definecolor{bg}{rgb}{0.97,0.97,0.97}
 
 \begin{document}
 \date{}
 \title{\Large \bf AMD Confidential Computing Technologies Evaluation Report}
 \author{{\rm Roberto Castellotti}\\TU Munich \and {\rm Masnori Misono}\\TU Munich}
 \maketitle
+
 % https://github.com/TUM-DSE/research-work-info/tree/master/thesis-report
-TODO:
 \begin{itemize}
-    \item change kernel version
-    \item update my repository to use the same scripts I am using in tum-dse/cvm\_evaluate
     \item license for repository?
     \item bios configuration
-    \item kernel isse masa solved, should we mention it?
 \end{itemize}
 
 \begin{abstract}
@@ -29,6 +31,9 @@ TODO:
 
     We report a preliminary performance evaluation of AMD SEV (Secure Environment Virtualization) technologies.
     We run our experiments on ryan, using a patched version of QEMU from AMD. We use QEMU/KVM as a hypervisor. We assign the guest the same amount of CPUs (16) and 16G of memory. Further details about our environment can be found in section \ref{sec:environment}
+    
+    Confidential Computing technologies may be predominant in the future, as more and more customers with sensitive computing workload shifts from on-premise hardware to public cloud vendors, thus being able to identify the performance bottlenecks may be crucial. Scripts to launch and configure machines and benchmarks can be find at: \href{https://github.com/rcastellotti/gr}.  
+
 
 \end{abstract}
 
@@ -159,11 +164,11 @@ We now introduced every part of AMD's effort to popularize Confidential Computin
 
 
 \section{Environment}
+\label{sec:environment}
 
 \begin{itemize}
     \item mention we need uefi and this is why we have ovmf
 \end{itemize}
-\label{sec:environment}
 OVMF is a project maintanied by TianoCore aiming to enable UEFI support for virtual machines, it is based on EDK 2, we will use OVMF to generate the executable firmware and the non-volatile variable store, it is important to create a vm-specific cody of OVMF\_vars.fd because the variable store should be private for every virtual machine
 
 QEMU is a generic open source machine emulator and virtualizer, we will use QEMU toghether with KVM, the Kernel Virtual machine to virtualize our machines.
@@ -178,27 +183,6 @@ We are running three distinct kinds of benchmarks: Compilation, Memory Benchmark
     \item[I/O Benchmarks] To measure I/O performance we are running two different benchmarks, first we are performing 2500 sqlite insertions in a table, then we are running redis-benchmark, a tool shipped toghether with redis. We are interested in Requests per Second and latency for the main operations. 
 \end{description}
 
-\begin{table*}
-    \centering
-    \label{tab:tinyben-results}
-    \begin{tabular}{l|r|r}
-    \textbf{benchmark}                        & \textbf{SEV-SNP} & \textbf{NOSEV} \\
-    \hline
-    Godot Game Engine compilation (LIB)       &  410 sec         & 395 sec        \\
-    ImageMagick compilation (gcc) (LIB)       &  70 sec          & 69 sec         \\
-    Linux compilation (defconfig) (LIB)       &  329 sec         & 322 sec        \\
-    LLVM Project compilation (ninja) (LIB)    &  774 sec         & 733 sec        \\
-    Sqlite 2500 insertions (LIB)              &  4.106 sec       & 4.31 sec       \\
-    ssvb/tinymembench MEMCPY (HIB)            &  22727.0 MB/s    & 23628.2 MB/s   \\
-    ssvb/tinymembench MEMSET (HIB)            &  33170.8 MB/s    & 36367.7 MB/s   \\
-    redis-benchmark SET RPS (HIB)             &  91911.76        & 110864.74      \\
-    redis-benchmark SET average latency (LIB) &  0.283 msec      & 0.234 msec     \\
-    redis-benchmark GET RPS (HIB)             &  94339.62        & 110987.79      \\
-    redis-benchmark GET average latency (LIB) &  0.275 msec	     & 0.233 msec     \\
-    \end{tabular}
-    \caption{Comparing benchmark results run on two QEMU vms (16 vCPUs, 16GB ram, virtio-scsi storage). HIB and LIB mean respectively "Higher is Better" and "Lower is Better", RPS stands for "Requests Per Second"} 
-\end{table*}
-
 As we can see in table \ref{tab:tinyben-results} the overhead introduced by the usage of Confidential Computing technology across the three categories of benchmarks is generally mild, and negligible in certain cases (ImageMagick compilation and Sqlite benchmark), further investigation tweaking the amount of resources available to each machine is necessary to correcly esteem the exact performance degradation values.
 
 We ran some additional benchmarks regarding the different storage virtualization techniques, more specifically we tested \textbf{virtio-scsi}, 
@@ -212,22 +196,88 @@ We ran some additional benchmarks regarding the different storage virtualization
 
 We perform some measurements using the fio \cite{fio} benchmarking tool, we use the same measurements used in \cite{spool} to evaluate: bandwidth, average latency and IOPS, we use the \texttt{--direct=1} flag to use unbuffered I/O.
 
+
 \begin{figure}
     \centering
-    \includegraphics[width=1\columnwidth]{img/bw.png}
+    \includegraphics[width=\columnwidth]{img/bw.png}
     \caption{Storage Bandwidth Benchmarks}
 \end{figure}
 \begin{figure}
     \centering
-    \includegraphics[width=1\columnwidth]{img/al.png}
+    \includegraphics[width=\columnwidth]{img/al.png}
     \caption{Average Latency}
 \end{figure}
 \begin{figure}
     \centering
-    \includegraphics[width=1\columnwidth]{img/iops.png}
+    \includegraphics[width=\columnwidth]{img/iops.png}
     \caption{I/O operations per second benchmark}
 \end{figure}
 
+\begin{table*}
+    \label{tab:experimentasdasdas-environment}
+    \begin{tabular}{llr}
+        \hline
+        \textbf{mode}& \textbf{storage} & \textbf{result} \\
+        \hline
+         read & blk & 0.400772 \\
+         read & nvme & 0.657459 \\
+        read & scsi & 0.276944 \\
+        write & blk & 0.695312 \\
+        write & nvme & 0.912306 \\
+        write & scsi & 0.740106 \\ 
+        \hline
+    \end{tabular}
+    \hfill
+    \label{tab:sadasdasdasdasd-environment}
+    \begin{tabular}{llr}
+        \hline
+        \textbf{mode}& \textbf{storage} & \textbf{result} \\
+        \hline
+        mixread & blk & 0.806119 \\
+        mixread & nvme & 0.957797 \\
+        mixread & scsi & 0.908825 \\
+        mixwrite & blk & 0.841954 \\
+        mixwrite & nvme & 0.838740 \\
+        mixwrite & scsi & 0.836713 \\
+        randread & blk & 0.780862 \\
+        randread & nvme & 0.826227 \\
+         randread & scsi & 0.837637 \\
+        randwrite & blk & 0.808918 \\
+         randwrite & nvme & 0.869906 \\
+        randwrite & scsi & 0.840391 \\
+        \hline
+    \end{tabular}
+    \hfill
+    \label{tab:experimasdasdasdadsent-environment}
+    \begin{tabular}{llr}
+        \hline
+        \textbf{mode}& \textbf{storage} & \textbf{result} \\
+        \hline
+        randread & blk & 1.209520 \\
+        randread & nvme & 1.002932 \\
+        randread & scsi & 1.184902 \\
+        randwrite & blk & 1.075011 \\
+        randwrite & nvme & 1.182046 \\
+        randwrite & scsi & 1.168258 \\
+        read & blk & 1.182743 \\
+        read & nvme & 0.938761 \\
+        read & scsi & 1.141962 \\
+        write & blk & 1.106275 \\
+        write & nvme & 0.900095 \\
+        write & scsi & 1.136616 \\
+        \hline
+    \end{tabular}
+    \caption{bw iops al environment}
+\end{table*}
+
+
+
+% \begin{tabular}{lllr}
+%     \toprule
+%      & group & nam  \bottomrule
+%     \end{tabular}
+
+The benchmarks highlight some interesting patterns: average latency is barely impacted
 
 \section{Future Work}
 Futher performance evaluation for SEV/SEV-ES/SEV-SNP confidential virtual machines will include:
@@ -238,11 +288,8 @@ Futher performance evaluation for SEV/SEV-ES/SEV-SNP confidential virtual machin
     \item analyzing whether having multiple SEV machines on the same physical host incurs in a large overhead
     \item analyze performance overhead caused by \texttt{VMRUN} and \texttt{VMEXIT} when SEV-ES is enabled.
     \item exploring Confidential Containers \cite{coco} project to identify what is worth benchmarking
-\end{itemize}further research will include but 
-
-item sev tio 
-explore coco (chrome bookmarks)
-item sev svsm
+    \item understand AMD Secure VM Service Module \cite{svsm}, a module to offload sensitive opearations ontto a privileged guest and see if this leads to a performance improvement
+\end{itemize}
 
 \printbibliography
 \appendix
