@@ -230,8 +230,15 @@ We perform some measurements using the fio \cite{fio} benchmarking tool, we use 
 
 
 \section{Future Work}
-in SEV-ES it seems like VMRUN and VMEXIT need to perform some additional tasks, can we benchmark this in some way?
-- https://jcadden.medium.com/confidential-computing-with-kubernetes-sev-guest-protection-for-kata-containers-8f29f0a3a2d7
+Futher performance evaluation for SEV/SEV-ES/SEV-SNP confidential virtual machines will include:
+
+\begin{itemize}
+    \item repeating microbenchmarks and fio benchmarks tweaking machines configuration (vCPUs, RAM, storage virtualizaton)
+    \item analyzing IO performance when using SEV Trusted Input Output \cite{tio}
+    \item analyzing whether having multiple SEV machines on the same physical host incurs in a large overhead
+    \item analyze performance overhead caused by \texttt{VMRUN} and \texttt{VMEXIT} when SEV-ES is enabled.
+    \item exploring Confidential Containers \cite{coco} project to identify what is worth benchmarking
+\end{itemize}further research will include but 
 
 item sev tio 
 explore coco (chrome bookmarks)
