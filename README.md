@@ -36,6 +36,10 @@ sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./sev.sh ./usr/qemu/usr/bin/
 - SEV machine: connect using ssh `ssh -p 2222 ubuntu@localhost`
 - NOSEV machine: connect using ssh `ssh -p 2223 ubuntu@localhost`
 
+
+pdflatex --shell-escape main.tex
+
+
 ## misc
 - <https://cloudinit.readthedocs.io/en/latest/reference/examples.html>
 - <https://github.com/AMDESE/linux>
