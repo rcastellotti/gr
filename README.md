@@ -15,7 +15,7 @@ Compile the custom OVMF and QEMU provided by AMD:
 - Download an ubuntu image: `wget https://cloud-images.ubuntu.com/kinetic/current/kinetic-server-cloudimg-amd64.img`
 - before launching guests you should run `./prepare.sh`
 
-This readme assumes ovmf and qemu are in `./usr`, i.e. that you run `./build.sh ./usr`, if that is not the case adapt the following commands to reflect your edit.
+This readme assumes ovmf and qemu are in `./usr`, i.e. that you ran `./build.sh ./usr`, if that is not the case adapt the following commands to reflect your edit.
 
 ### Launch a NOSEV guest. 
 
@@ -35,10 +35,6 @@ sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./sev.sh ./usr/qemu/usr/bin/
 ## Interact with the machines
 - SEV machine: connect using ssh `ssh -p 2222 ubuntu@localhost`
 - NOSEV machine: connect using ssh `ssh -p 2223 ubuntu@localhost`
-
-
-pdflatex --shell-escape main.tex
-
 
 ## misc
 - <https://cloudinit.readthedocs.io/en/latest/reference/examples.html>
