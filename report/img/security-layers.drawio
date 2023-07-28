@@ -1,0 +1,58 @@
+<mxfile host="app.diagrams.net" modified="2023-07-26T16:57:38.608Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36" etag="r2yDBewvim7q7fve8JzP" version="21.6.1" type="device">
+  <diagram name="Page-1" id="UID30p9ntac0tRSPOpcZ">
+    <mxGraphModel dx="273" dy="343" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="4c2b56_9NeGbDJ8c7ghM-18" value="" style="group;fillColor=none;" vertex="1" connectable="0" parent="1">
+          <mxGeometry x="353.75" y="497" width="246.25" height="169.25" as="geometry" />
+        </mxCell>
+        <mxCell id="4c2b56_9NeGbDJ8c7ghM-1" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#a5a5a5;fontSize=10;fontFamily=Inconsolata;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DInconsolata;" vertex="1" parent="4c2b56_9NeGbDJ8c7ghM-18">
+          <mxGeometry y="36.75" width="132.5" height="132.5" as="geometry" />
+        </mxCell>
+        <mxCell id="4c2b56_9NeGbDJ8c7ghM-2" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#c48170;fontSize=10;fontFamily=Inconsolata;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DInconsolata;" vertex="1" parent="4c2b56_9NeGbDJ8c7ghM-18">
+          <mxGeometry x="31.25" y="68" width="70" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="4c2b56_9NeGbDJ8c7ghM-3" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#ed7d31;fontSize=10;fontFamily=Inconsolata;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DInconsolata;" vertex="1" parent="4c2b56_9NeGbDJ8c7ghM-18">
+          <mxGeometry x="52.5" y="89.25" width="27.5" height="27.5" as="geometry" />
+        </mxCell>
+        <mxCell id="4c2b56_9NeGbDJ8c7ghM-7" value="" style="endArrow=none;html=1;rounded=0;fontSize=10;fontFamily=Inconsolata;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DInconsolata;" edge="1" parent="4c2b56_9NeGbDJ8c7ghM-18">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="116.25" y="123" as="sourcePoint" />
+            <mxPoint x="168.5" y="74.5" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="142.25" y="74.5" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="4c2b56_9NeGbDJ8c7ghM-9" value="" style="endArrow=none;html=1;rounded=0;fontSize=10;fontFamily=Inconsolata;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DInconsolata;" edge="1" parent="4c2b56_9NeGbDJ8c7ghM-18">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="89.25" y="103" as="sourcePoint" />
+            <mxPoint x="145.5" y="46.75" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="119.25" y="46.75" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="4c2b56_9NeGbDJ8c7ghM-10" value="" style="endArrow=none;html=1;rounded=0;fontSize=10;fontFamily=Inconsolata;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DInconsolata;" edge="1" parent="4c2b56_9NeGbDJ8c7ghM-18">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="68.25" y="100" as="sourcePoint" />
+            <mxPoint x="143.5" y="18" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="117.25" y="18" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="4c2b56_9NeGbDJ8c7ghM-12" value="Program code/data" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;fontFamily=Inconsolata;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DInconsolata;" vertex="1" parent="4c2b56_9NeGbDJ8c7ghM-18">
+          <mxGeometry x="136.25" width="110" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="4c2b56_9NeGbDJ8c7ghM-13" value="SEV security layer&lt;br style=&quot;font-size: 10px;&quot;&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;fontFamily=Inconsolata;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DInconsolata;" vertex="1" parent="4c2b56_9NeGbDJ8c7ghM-18">
+          <mxGeometry x="146.25" y="37" width="93.75" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="4c2b56_9NeGbDJ8c7ghM-16" value="Existing CPU&amp;nbsp; &amp;nbsp;security layer" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;fontFamily=Inconsolata;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DInconsolata;" vertex="1" parent="4c2b56_9NeGbDJ8c7ghM-18">
+          <mxGeometry x="156.25" y="63" width="90" height="20" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
