@@ -1,24 +1,159 @@
 @online{memory-encryption,
-    author = {David Kaplan, Jeremy Powell, Tom Woller},
-    title = {AMD Memory Encryption},
-    publisher = {Advanced Micro Devices Inc},
-    year = 2021,
-    url = {https://www.amd.com/system/files/TechDocs/memory-encryption-white-paper.pdf},
-    urldate = {2023-07-07}
+  author    = {David Kaplan, Jeremy Powell, Tom Woller},
+  title     = {AMD Memory Encryption},
+  publisher = {Advanced Micro Devices Inc},
+  year      = 2021,
+  url       = {https://www.amd.com/system/files/TechDocs/memory-encryption-white-paper.pdf},
+  urldate   = {2023-07-07}
 }
 @online{protecting-registers,
-    author = {David Kaplan},
-    title = {Protecting VM Register State with SEV-ES},
-    publisher = {Advanced Micro Devices Inc},
-    year = 2017,
-    url = {https://www.amd.com/system/files/TechDocs/Protecting%20VM%20Register%20State%20with%20SEV-ES.pdf},
-    urldate = {2023-07-07}
+  author    = {David Kaplan},
+  title     = {Protecting VM Register State with SEV-ES},
+  publisher = {Advanced Micro Devices Inc},
+  year      = 2017,
+  url       = {https://www.amd.com/system/files/TechDocs/Protecting%20VM%20Register%20State%20with%20SEV-ES.pdf},
+  urldate   = {2023-07-07}
 }
 @online{sev-snp,
-    author = {Advanced Micro Devices Inc},
-    title = {AMD SEV-SNP: Strengthening VM Isolation with Integrity Protection and More},
-    publisher = {Advanced Micro Devices Inc},
-    year = 2020,
-    url = {https://www.amd.com/system/files/TechDocs/SEV-SNP-strengthening-vm-isolation-with-integrity-protection-and-more.pdf},
-    urldate = {2023-07-07}
+  author    = {Advanced Micro Devices Inc},
+  title     = {AMD SEV-SNP: Strengthening VM Isolation with Integrity Protection and More},
+  publisher = {Advanced Micro Devices Inc},
+  year      = 2020,
+  url       = {https://www.amd.com/system/files/TechDocs/SEV-SNP-strengthening-vm-isolation-with-integrity-protection-and-more.pdf},
+  urldate   = {2023-07-07}
 }
+
+@online{tio,
+  author    = {Advanced Micro Devices Inc},
+  title     = {AMD SEV-TIO: Trusted I/O for Secure Encrypted Virtualization},
+  publisher = {Advanced Micro Devices Inc},
+  year      = 2023,
+  url       = {https://www.amd.com/system/files/documents/sev-tio-whitepaper.pdf},
+  urldate   = {2023-07-07}
+}
+
+@online{svsm,
+  author    = {Advanced Micro Devices Inc},
+  title     = {Secure VM Service Module forSEV-SNP Guestsn},
+  publisher = {Advanced Micro Devices Inc},
+  year      = 2022,
+  url       = {https://www.amd.com/system/files/TechDocs/58019-svsm-draft-specification.pdf},
+  urldate   = {2023-07-21}
+}
+
+
+@online{architecture-reference,
+  author    = {Advanced Micro Devices Inc},
+  title     = {AMD64 Architecture Programmer's Manual Volumes 1–5},
+  publisher = {Advanced Micro Devices Inc},
+  year      = 2023,
+  url       = {https://www.amd.com/system/files/TechDocs/40332.pdf},
+  urldate   = {2023-07-07}
+}
+
+@online{tinymembench,
+  author  = {Siarhei Siamashka},
+  title   = {Simple benchmark for memory throughput and latency},
+  url     = {https://github.com/ssvb/tinymembenchs},
+  urldate = {2023-07-07}
+}
+
+@online{tinyben,
+  author  = {Roberto Castellotti},
+  title   = {a <1000 loc benchmark suite in python},
+  url     = {https://github.com/rcastellotti/tinyben},
+  urldate = {2023-07-07}
+}
+
+@online{pts,
+  author  = {Michael Larabel},
+  title   = {The Phoronix Test Suite open-source, cross-platform automated testing/benchmarking software},
+  url     = {https://github.com/phoronix-test-suite/phoronix-test-suite},
+  urldate = {2023-07-07}
+}
+
+
+@online{fio,
+  author  = {Jens Axboe},
+  title   = {Flexible I/O tester rev. 3.35},
+  url     = {https://fio.readthedocs.io/en/latest/fio_doc.html},
+  urldate = {2023-07-07}
+}
+
+@inproceedings{spool,
+  author    = {Xue, Shuai and Zhao, Shang and Chen, Quan and Deng, Gang and Liu, Zheng and Zhang, Jie and Song, Zhuo and Ma, Tao and Yang, Yong and Zhou, Yanbo and Niu, Keqiang and Sun, Sijie and Guo, Minyi},
+  title     = {Spool: Reliable Virtualized NVMe Storage Pool in Public Cloud Infrastructure},
+  year      = {2020},
+  isbn      = {978-1-939133-14-4},
+  publisher = {USENIX Association},
+  address   = {USA},
+  abstract  = {Ensuring high reliability and availability of virtualized NVMe storage systems is crucial for large-scale clouds. However, previous I/O virtualization systems only focus on improving I/O performance and ignore the above challenges. To this end, we propose Spool, a reliable NVMe virtualization system. Spool has three key advantages: (1) It diagnoses the device failure type and only replaces the NVMe devices with actual media errors. Other data link errors are handled through resetting the device controller, minimizing data loss due to unnecessary device replacement. (2) It ensures the consistency and correctness of the data when resetting the controller and upgrading the storage virtualization system. (3) It greatly reduces the restart time of the NVMe virtualization system. The quick restart eliminates complaints from tenants due to denial-of-service during a system upgrade and failure recovery. Our evaluation shows that Spool provides reliable storage services with performance loss smaller than 3\%, and it reduces restart time by 91\% when compared with SPDK.},
+  booktitle = {Proceedings of the 2020 USENIX Conference on Usenix Annual Technical Conference},
+  articleno = {7},
+  numpages  = {14},
+  series    = {USENIX ATC'20}
+}
+
+@online{aws-enc,
+  author  = {Amazon Web Services},
+  title   = {Encryption of Data at Rest},
+  url     = {https://docs.aws.amazon.com/whitepapers/latest/efs-encrypted-file-systems/encryption-of-data-at-rest.html},
+  urldate = {2023-07-07}
+}
+@online{azure-enc,
+  author  = {Microsoft Azure},
+  title   = {Azure Data Encryption at rest},
+  url     = {https://learn.microsoft.com/en-us/azure/security/fundamentals/encryption-atrest},
+  urldate = {2023-07-07}
+}
+@online{gcp-enc,
+  author  = {Google Cloud Platform},
+  title   = {Default encryption at rest},
+  url     = {https://cloud.google.com/docs/security/encryption/default-encryption},
+  urldate = {2023-07-07}
+}
+
+@online{tdx,
+  author  = {Intel®},
+  title   = {Intel® Trust Domain Extensions},
+  url     = {https://cdrdv2.intel.com/v1/dl/getContent/690419},
+  urldate = {2023-07-07}
+}
+
+@online{cca,
+  author  = {Arm Limited},
+  title   = {Introducing Arm Confidential Compute Architecture},
+  url     = {https://developer.arm.com/documentation/den0125/latest},
+  urldate = {2023-07-07}
+}
+
+@inproceedings{qemu,
+author = {Bellard, Fabrice},
+title = {QEMU, a Fast and Portable Dynamic Translator},
+year = {2005},
+publisher = {USENIX Association},
+address = {USA},
+abstract = {We present the internals of QEMU, a fast machine emulator using an original portable dynamic translator. It emulates several CPUs (x86, PowerPC, ARM and Sparc) on several hosts (x86, PowerPC, ARM, Sparc, Alpha and MIPS). QEMU supports full system emulation in which a complete and unmodified operating system is run in a virtual machine and Linux user mode emulation where a Linux process compiled for one target CPU can be run on another CPU.},
+booktitle = {Proceedings of the Annual Conference on USENIX Annual Technical Conference},
+pages = {41},
+numpages = {1},
+location = {Anaheim, CA},
+series = {ATEC '05}
+}
+
+@online{ovmf,
+  author  = {Tianocore's EDK II project},
+  title   = {Open Virtual Machine Firmware (OVMF)},
+  url     = {http://www.linux-kvm.org/downloads/lersek/ovmf-whitepaper-c770f8c.txt},
+  urldate = {2023-07-07}
+}
+
+@online{coco,
+  author  = {Confidential Containers},
+  title   = {Confidential Containers},
+  url     = {https://github.com/confidential-containers},
+  urldate = {2023-07-21}
+}
+
+
+

@@ -1,66 +1,67 @@
-# GR - Evaluating Confidential Computing with Unikernels
+# GR - AMD Confidential Computing Technologies Evaluation Report
 
-## Prepare the host toolchain
+## Instructions to launch SEV machines
+
+### Prepare the host toolchain
 Compile the custom OVMF and QEMU provided by AMD:
 
 ```bash
-./build.sh
+./build.sh <dir>
 ```
 
-## Misc
+### Misc
 
-- You need to have cloud-config file and a network-config file for your VM, similar to those in the [config](.config/) folder.
-- If you wish to have ssh connection to your VMs, you can adapt the cloud-config files and include your ssh keys, so that cloud-init sets them up automatically in the VM. Example cloud-init configurations that include the placeholders for ssh keys can be found in `config/`
-- The [`prepare_net_cfg.sh`](./prepare_net_cfg.sh) script takes as a parameter the virtual bridge where the VMs will be connected to and modifies the IP prefix in the network configuration (given as a secord parameter) appropriately.
+- [config](.config/) folder contains some configurations for ubuntu cloudimg.
 - Download an ubuntu image: `wget https://cloud-images.ubuntu.com/kinetic/current/kinetic-server-cloudimg-amd64.img`
+- before launching guests you should run `./prepare.sh`
 
-## Prepare a NOSEV guest
+This readme assumes ovmf and qemu are in `./usr`, i.e. that you run `./build.sh ./usr`, if that is not the case adapt the following commands to reflect your edit.
 
-```bash
-qemu-img convert kinetic-server-cloudimg-amd64.img nosev.img
-qemu-img resize nosev.img +20G
-mkdir OVMF_files
-sudo cloud-localds cloud-config-nosev.iso config/cloud-config-nosev.yml
-cp ./usr/local/share/qemu/OVMF_CODE.fd ./OVMF_files/OVMF_CODE_nosev.fd
-cp ./usr/local/share/qemu/OVMF_VARS.fd ./OVMF_files/OVMF_VARS_nosev.fd
-```
-## Launch a NOSEV guest. 
+### Launch a NOSEV guest. 
 
 ```bash
-sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./nosev.sh
+sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./nosev.sh ./usr/qemu/usr/bin/
 ```
 
-## Prepare an AMD SEV-SNP guest.
+### Launch an AMD SEV-SNP guest. 
 
 ```bash
-qemu-img convert kinetic-server-cloudimg-amd64.img sev.img
-qemu-img resize sev.img +20G
-mkdir OVMF_files
-sudo cloud-localds cloud-config-sev.iso ./config/cloud-config-sev.yml
-cp ./usr/local/share/qemu/OVMF_CODE.fd ./OVMF_files/OVMF_CODE_sev.fd
-cp ./usr/local/share/qemu/OVMF_VARS.fd ./OVMF_files/OVMF_VARS_sev.fd
+sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./sev.sh ./usr/qemu/usr/bin/
 ```
 
-## Launch an AMD SEV-SNP guest. 
-
-```bash
-sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./sev.sh
-```
-
-## Inside the guest VM, verify that AMD SEV-SNP is enabled:
+## Inside the guest VM, verify SEV-SNP is enabled:
 `sudo dmesg | grep snp -i ` should indicate `Memory Encryption Features active: AMD SEV SEV-ES SEV-SNP`
 
 ## Interact with the machines
 - SEV machine: connect using ssh `ssh -p 2222 ubuntu@localhost`
 - NOSEV machine: connect using ssh `ssh -p 2223 ubuntu@localhost`
 
-### Useful links
-- Sample cloud-config and network-config for cloud-init can be found [here](https://gist.github.com/itzg/2577205f2036f787a2bd876ae458e18e).
-- Additional options of the cloud-config, such as running a specific command during initialization, can be found [here](https://www.digitalocean.com/community/tutorials/how-to-use-cloud-config-for-your-initial-server-setup)
-- AMD [host kernels](https://github.com/AMDESE/linux) -- check branch names for each feature (e.g., SEV, ES, SNP)
-- [QEMU](https://github.com/AMDESE/qemu) provided by AMD
-- [OVMF](https://github.com/AMDESE/ovmf) provided by AMD
+
+pdflatex --shell-escape main.tex
 
 
-
-remembver to launch benches with sudo
+## misc
+- <https://cloudinit.readthedocs.io/en/latest/reference/examples.html>
+- <https://github.com/AMDESE/linux>
+- <https://github.com/AMDESE/qemu>
+- <https://github.com/AMDESE/ovmf>
+- <http://www.linux-kvm.org/downloads/lersek/ovmf-whitepaper-c770f8c.txt>
+- <https://www.kernel.org/doc/html/v5.6/virt/kvm/amd-memory-encryption~.html>
+- <https://www.qemu.org/docs/master/system/i386/amd-memory-encryption.html>
+- <https://www.amd.com/content/dam/amd/en/documents/developer/58207-using-sev-with-amd-epyc-processors.pdf>
+- <https://www.amd.com/en/developer/sev.html>
+- <https://www.linux-kvm.org/page/Virtio>
+- <https://www.ovirt.org/develop/release-management/features/storage/virtio-scsi.html>
+- <https://www.qemu.org/2021/01/19/virtio-blk-scsi-configuration/>
+- <https://projectacrn.github.io/latest/developer-guides/hld/virtio-blk.html>
+- <https://linux-kernel-labs.github.io/refs/heads/master/labs/block_device_drivers.html>
+- <https://qemu-project.gitlab.io/qemu/system/devices/nvme.html>
+- <https://www.qemu.org/2020/09/14/qemu-storage-overview/>
+- <https://blogs.oracle.com/linux/post/using-amd-secure-memory-encryption-with-oracle-linux>
+- <https://www.amd.com/system/files/documents/using-amd-secure-encrypted-virtualization-encrypted-state-on-think-system-servers.pdf>
+- <https://documentation.suse.com/sles/15-SP1/html/SLES-amd-sev/art-amd-sev.html>
+- <https://help.ovhcloud.com/csm/en-dedicated-servers-amd-sme-sev?id=kb_article_view&sysparm_article=KB0044018>
+- <https://documentation.suse.com/de-de/sles/15-SP4/html/SLES-all/article-amd-sev.html#table-guestpolicy>
+- <http://www.linux-kvm.org/downloads/lersek/ovmf-whitepaper-c770f8c.txt>
+- <https://www.amd.com/system/files/TechDocs/cloud-security-epyc-hardware-memory-encryption.pdf>
+- <https://jcadden.medium.com/confidential-computing-with-kubernetes-sev-guest-protection-for-kata-containers-8f29f0a3a2d7>

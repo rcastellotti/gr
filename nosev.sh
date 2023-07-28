@@ -7,16 +7,6 @@ if [ $# -lt 1 ]; then
     exit 1
 fi
 
-[ ! -e kinetic-server-cloudimg-amd64.img ] && wget https://cloud-images.ubuntu.com/kinetic/current/kinetic-server-cloudimg-amd64.img
-mkdir -p OVMF_files
-
-# prepare the nosev machine
-#rm -f nosev.img
-#qemu-img convert kinetic-server-cloudimg-amd64.img nosev.img
-#qemu-img resize nosev.img +20G
-#rm -f cloud-config-nosev.iso
-
-
 if [ "$1" == "blk" ]; then
     device_type="virtio-blk-pci,drive=disk0,id=virtblk0,num-queues=4"
 elif [ "$1"=="nvme" ]; then
@@ -24,8 +14,9 @@ elif [ "$1"=="nvme" ]; then
 elif [ "$1"=="scsi" ]; then
     device_type="virtio-scsi-pci,id=scsi0,disable-legacy=on,iommu_platform=true"
 fi
-sed -i "s/- \[temp\]/- \[sudo, bash, \/run\/fio.sh, nosev, "$1"\]/" ./config/cloud-config-nosev.yml
-#sudo cloud-localds cloud-config-nosev.iso config/cloud-config-nosev.yml
+# rm -f cloud-config-nosev.iso
+# sed -i "s/- \[temp\]/- \[sudo, bash, \/run\/fio.sh, nosev, "$1"\]/" ./config/cloud-config-nosev.yml
+# sudo cloud-localds cloud-config-nosev.iso config/cloud-config-nosev.yml
 
 ./usr/local/bin/qemu-system-x86_64 \
     -enable-kvm \
