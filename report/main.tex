@@ -17,40 +17,35 @@
 \author{{\rm Roberto Castellotti}\\TU Munich}
 \maketitle
 
-\begin{itemize}
-    \item split the tinyben results in 3 diffent barplots and remove the imagemagick compilation
-    \item write better captions for the tables (especially fio results)
-    \item if you use tables to put relative values, I think it’s a good idea to have both measured values and improvements
-\end{itemize}
-
 \begin{abstract}
     We report a preliminary performance evaluation of AMD SEV (Secure Environment Virtualization) technologies.
-    We run our experiments on ryan, using a patched version of QEMU from AMD. We use QEMU/KVM as a hypervisor. We assign the guest the same amount of CPUs (16) and 16G of memory. Further details about our environment can be found in section \ref{sec:environment}
+    We focus on virtual machines, we are using QEMU/KVM as Hypervisor and we are running them on a powerful machine we control.
+    Details about our environment can be found in section \ref{sec:environment}
 
-    Confidential Computing technologies may be predominant in the future, as more and more customers with sensitive computing workload shifts from on-premise hardware to public cloud vendors, thus being able to identify the performance bottlenecks may be crucial. Scripts to launch and configure machines and benchmarks can be found at: \href{https://github.com/rcastellotti/gr}.  
+    Confidential Computing technologies may be predominant in the future, as more and more customers with sensitive computing workloads move their code from on-premise hardware to public cloud vendors. Being able to identify the performance bottlenecks may be crucial. After thoroughly explaining how the technologies introduced by AMD work we run some benchmarks to measure the impact these have on micro-benchmarks and traditional workloads such as compilation of popular open-source projects.
 \end{abstract}
 
 \section{Introduction}
-Confidential Computing is a topic that started to become relevant in the last years. In the last two decades the way software is shipped to production changed radically, almost everyone now uses cloud providers (Google Cloud Platform, Amazon Web Services, Microsoft Azure, etc.). This leads to customers running their code on machines they don't own. It is logic customers want to be sure no one can access their disks, memory or CPU registers, not other customers running virtual machines on the same hardware, nor whoever is controlling the hypervisor, be it  the cloud vendor  or, in worst case scenarios, malign actors who compromised the physical machines. Encryption at rest (designed to prevent the attacker from accessing the unencrypted data by ensuring the data is encrypted when on disk from Microsoft, cite properly) has been around for a long time, and is currently supported by all major providers \cite{aws-enc}, \cite{gcp-enc}, \cite{azure-enc} but leaves a big part of daily computing unencrypted, namely RAM and CPU registers, to tackle this issue major chip producers started to develop a technlogy to enable "confidential computing", namely AMD Secure Encrypted Virtualization (SEV) \cite{memory-encryption}, Intel Trusted Domain Extensions (TDX) \cite{tdx} and Arm Confidential Compute Architecture (CCA) \cite{cca}
+Confidential Computing is a topic that started to become relevant in the last years. In the last two decades the way software is shipped to production changed radically, the majority of code deployed is hosted by cloud providers (Google Cloud Platform, Amazon Web Services, Microsoft Azure, etc.). Some code is still run on-premise for privacy/safety reasons. Confidential Computing aims to provide a safe environment for developers to run highly sensitive code on machines they don't own. It is logic customers want to be sure no one can access their disks, memory or CPU registers, neither other customers running virtual machines on the same hardware, nor whoever is controlling the hypervisor, be it  the cloud vendor  or, in worst case scenarios, malign actors who compromised the physical machines. Encryption at rest,designed to prevent the attacker from accessing the unencrypted data by ensuring the data is encrypted when on disk, has been around for a long time, and is currently supported by all major providers \cite{aws-enc}, \cite{gcp-enc}, \cite{azure-enc} but leaves a big part of daily computing unencrypted, namely RAM and CPU registers, to tackle this issue major chip producers started to develop technologies to enable "confidential computing", namely AMD Secure Encrypted Virtualization (SEV) \cite{memory-encryption}, Intel Trusted Domain Extensions (TDX) \cite{tdx} and Arm Confidential Compute Architecture (CCA) \cite{cca}
 \section{Background}
 
 
 \subsection{AMD Secure Memory Encryption (SME)}
     AMD Secure Memory Encryption (SME) is the basic building block for the more sophisticated technologies we'll cover later, so it is imperative we understand how it works. In a machine with SME enabled memory operations are performed via dedicated hardware, an entirely different chip on die. AMD EPYC™ introduced two hardware security components:
     \begin{description}
-        \item [AES-128 hardware encryption engine] embedded in memory controller, makes sure data to main memory is encrypted during write opeartions and decrypted during read operations, this memory controller is inside the EPYC SOC, so memory lines leaving the soc are encrypted
+        \item [AES-128 hardware encryption engine] embedded in memory controller, makes sure data to main memory is encrypted during write operations and decrypted during read operations, this memory controller is inside the EPYC SOC, so memory lines leaving the SOC are encrypted
         \item [AMD Secure Processor] a small processor providing cryptographic functionality for secure key generation and key management
     \end{description}
 
     \begin{figure}
         \centering
         \includegraphics[scale=0.9]{img/read-write.pdf}
-        \caption{Memory Encryption Behaviour, from \cite{memory-encryption}}
+        \caption{Memory Encryption Behavior, from \cite{memory-encryption}}
     \end{figure}
 
-    The key used to encyrpt and decrypt memory is generated securely by the AMD Secure-Processor (SMD-SP), a 32 bit microcontroller and it is not accesible by software running on the main CPU, furthermore SME does not require software running on main CPU to partecipate in Key Management making the enclave more secure.
+    The key used to encrypt and decrypt memory is generated securely by the AMD Secure-Processor (SMD-SP), a 32 bit micro-controller and it is not accessible by software running on the main CPU, furthermore SME does not require software running on main CPU to participate in Key Management making the enclave more secure.
 
-    The C-bit is a bit present in any memory page and indicates whether the current page is to be encrypted, it can be retrieved toghether with some additional infos by running the \texttt{cpuid} command to inspect leaf \texttt{0x8000001F}, as specified by AMD Reference Manual (do i need to cite it?):
+    The C-bit is a bit present in any memory page and indicates whether the current page is to be encrypted, it can be retrieved together with some additional information by running the \texttt{cpuid} command to inspect leaf \texttt{0x8000001F}, as specified by AMD Reference Manual (do i need to cite it?):
 
     \begin{minted}[bgcolor=bg,fontsize=\footnotesize]{bash}
 $ cpuid -1 -l 0x8000001F
@@ -79,13 +74,13 @@ AMD Secure Encryption (0x8000001f):
     minimum SEV guest ASID                   = 0x80 (128)
     \end{minted}
     
-    SME is a very powerful mechanism to provide memory encryption, but it requires support from the Operating System/Hypervisor, \textbf{Transparent SME (TSME)} is a solution to encrypt every memory page regardeless of the C-bit, as the name suggests this technology provides encryption without further modification to OS/HV, this may be crucial because Operating System developers don't have to support it and older operating systems can be run with TSME.
+    SME is a very powerful mechanism to provide memory encryption, but it requires support from the Operating System/Hypervisor, \textbf{Transparent SME (TSME)} is a solution to encrypt every memory page regardless of the C-bit, as the name suggests this technology provides encryption without further modification to OS/HV, this may be crucial because Operating System developers don't have to support it and older operating systems can be run with TSME.
 
     We now switch our focus to AMD SEV, a technology powered by AMD SME that enables Confidential Computing for virtual machines.
 
-\subsection{AMD Secure Encrypyted Virtualization (SEV)}
+\subsection{AMD Secure Encrypted Virtualization (SEV)}
 
-    AMD SEV is an attempt to make virtual machines more secure to use by encrypting data to and from a virtual machine, and enables a new security model protecting code from higher privileged resources, such as hypervisors or some privileged code running on the phyisical machine hosting the virtual machines. In this context, as mentioned before, we should never trust the hypervisor since it may be compromised or acting maliciously by default.
+    AMD SEV is an attempt to make virtual machines more secure to use by encrypting data to and from a virtual machine, and enables a new security model protecting code from higher privileged resources, such as hypervisors or some privileged code running on the physical machine hosting the virtual machines. In this context, as mentioned before, we should never trust the hypervisor since it may be compromised or acting maliciously by default.
 
     \begin{figure}
         \centering
@@ -93,27 +88,27 @@ AMD Secure Encryption (0x8000001f):
         \caption{SEV security layers, from \cite{memory-encryption}}
     \end{figure}
 
-    SEV is an extension to the AMD-V architecture, when SEV is enabled SEV machines tag data with VM ASID (an unique identifier for that specific machine), this tag is used inside the SOC and prevents external entities to access it, when data leaves the chip we have no such problem because it is encrypted using the previously exchanged AES-128 bit key. The aforementioned expedients provide strong cryptography isolation between VMs run by the same hypervisor and between VMs and the hypervisor by itself. SEV guests can choose which pages to encrypt, this is handled setting the c-bit as mentioned before for SME. Only pages meant fot oustide communcations are considered shared and thus not encrypted.
+    SEV is an extension to the AMD-V architecture, when SEV is enabled SEV machines tag data with VM ASID (an unique identifier for that specific machine), this tag is used inside the SOC and prevents external entities to access it, when data leaves the chip we have no such problem because it is encrypted using the previously exchanged AES-128 bit key. The aforementioned expedients provide strong cryptography isolation between VMs run by the same hypervisor and between VMs and the hypervisor by itself. SEV guests can choose which pages to encrypt, this is handled setting the c-bit as mentioned before for SME. Only pages meant for outside communications are considered shared and thus not encrypted.
 
 \section{AMD Secure Encrypted Virtualization-Encrypted State (SEV-ES)}
 
     Up until now we only discussed encryption for memory, but a crucial portion of the system we want to protect are CPU registers, AMD SEV-ES encrypts all CPU register contents when a VM stops running. What this means is a malevolent actor is not able to read CPU's register contents when the machine is shutdown no matter the privilege level he acquired before, CPU register's state is saved and encrypted when the machine is shutdown.
 
-    Protecting CPU register may be a daunting task because sometimes an Hypervisor may need to access VM CPU's register to provide services such as device emulation. These accesses must be protected, ES technlogy allows the guest VM to decide which registers are encrypted, in the same vein a machine can choose which memory pages are to be encrypted via the C-bit.
+    Protecting CPU register may be a daunting task because sometimes an Hypervisor may need to access VM CPU's register to provide services such as device emulation. These accesses must be protected, ES technology allows the guest VM to decide which registers are encrypted, in the same vein a machine can choose which memory pages are to be encrypted via the C-bit.
 
-    SEV-ES introuduces a single atomic hardware instruction: \texttt{VMRUN}, when this intruction is executed for a guest the CPU loads all registers, when the VM stops runnning (\texttt{VMEXIT}), register's state is saved automatically to  back to memory. These instructions are atomic because we need to be sure no one can sneak into this process and alter it, ES guarantees in this way it is impossible to leak memory.
+    SEV-ES introduces a single atomic hardware instruction: \texttt{VMRUN}, when this instruction is executed for a guest the CPU loads all registers, when the VM stops running (\texttt{VMEXIT}), register's state is saved automatically to  back to memory. These instructions are atomic because we need to be sure no one can sneak into this process and alter it, ES guarantees in this way it is impossible to leak memory.
 
-    Whenever hardware saves register it encrypts them with the very same AES-128 key we mentioned before, furthermore the CPU computes an integrity-check value and saves it into memory not accessible by the CPU, on next \texttt{VMRUN} instruction this will be checked to ensure nobody tried to tamper register's state. For further information about external communication consult the whitepaper \cite{protecting-registers} and AMD reference manual chapter 15 \cite{architecture-reference}.
+    Whenever hardware saves register it encrypts them with the very same AES-128 key we mentioned before, furthermore the CPU computes an integrity-check value and saves it into memory not accessible by the CPU, on next \texttt{VMRUN} instruction this will be checked to ensure nobody tried to tamper register's state. For further information about external communication consult the white-paper \cite{protecting-registers} and AMD reference manual chapter 15 \cite{architecture-reference}.
 
     Similarly to AMD-SEV AMD-ES is completely transparent to application code, only the guest VM and the Hypervisor need to implement these specific features.
 
 \subsection{AMD Secure Encrypted Virtualization-Secure Nested Paging (SEV-SNP)}
 
-    After the introduction of AMD-SEV an AMD-ES AMD decided to introduce the next generation of SEV called Secure Nested Paging (SEV-SNP), this technlogy build on top of the aforementioned technlogies and extends them further to implement strong memory integrity protection to prevent Hypervisor based attacks, such as \textbf{replay attacks} and \textbf{memory remapping}, \textbf{data corruction} and \textbf{memory aliasing}
+    After the introduction of AMD-SEV an AMD-ES AMD decided to introduce the next generation of SEV called Secure Nested Paging (SEV-SNP), this technology build on top of the aforementioned technologies and extends them further to implement strong memory integrity protection to prevent Hypervisor based attacks, such as \textbf{replay attacks} and \textbf{memory remapping}, \textbf{data corruption} and \textbf{memory aliasing}
 
     \begin{description}
-        \item[replay attacks] a malicious actor captures a state at a certain moment and modifies memory succesfully with those values
-        \item[data corruption] even though an attacker cannot read a memory he can simply corrupt the memory to trick the machine into unpredicted behaviour
+        \item[replay attacks] a malicious actor captures a state at a certain moment and modifies memory successfully with those values
+        \item[data corruption] even though an attacker cannot read a memory he can simply corrupt the memory to trick the machine into unpredicted behavior
         \item[memory aliasing] an external actor may map a memory page to multiple physical pages
         \item[memory remapping] the intruder maps a page to a different physical page
     \end{description}
@@ -129,28 +124,30 @@ AMD Secure Encryption (0x8000001f):
             \item \textbf{BIOS} on the host system, the \textbf{Hypervisor}, \textbf{device drivers} and \textbf{other VMS} are fully untrusted, this means the threat model assumes they are malicious and may conspire to compromise the security of our Confidential Virtual Machine.
         \end{itemize}
 
-    The way SEV-SNP ensures protection against the attacks we mentioned before is by introudcing a new data structure, a \textbf{Reverse Map Table (RMP)} that tracks owners of memory pages, in this way we can enforce that only the owner of a certain memory page can alter it. A page can be owned by the VM, the Hypervisor or by the AMD Secure Processor. The RMP is used in conjunction with standard x86 page tables mechanisms to enforce memory restrictions and page access rights. RMP fixes replay, remapping and data corruction attacks. 
+    The way SEV-SNP ensures protection against the attacks we mentioned before is by introducing a new data structure, a \textbf{Reverse Map Table (RMP)} that tracks owners of memory pages, in this way we can enforce that only the owner of a certain memory page can alter it. A page can be owned by the VM, the Hypervisor or by the AMD Secure Processor. The RMP is used in conjunction with standard x86 page tables mechanisms to enforce memory restrictions and page access rights. RMP fixes replay, remapping and data corruption attacks. 
 
     RMP checks are introduced for write operations on memory, however external (Hypervisor) read accesses do not require them because we have AES encryption protecting our memory.
 
     To prevent memory remapping a technique called \textbf{Page Validation} is introduced.
-    Inside each RMP entry there is a Validated bit, pages assigned to guests that have no validated bit set are not usable by the Hypervisor, the guest can only use the page after setting the validated bit through a \texttt{PVALIDATE} instruction. The VM will make sure that it is not possible to validate a SPA (system phyiscal address) corresponding to a GPA (Guest Physical Address) more than once.
+    Inside each RMP entry there is a Validated bit, pages assigned to guests that have no validated bit set are not usable by the Hypervisor, the guest can only use the page after setting the validated bit through a \texttt{PVALIDATE} instruction. The VM will make sure that it is not possible to validate a SPA (system physical address) corresponding to a GPA (Guest Physical Address) more than once.
  
-    More details are discussed in the introductory whitepaper \cite{sev-snp}
+    More details are discussed in the introductory white-paper \cite{sev-snp}
 
-    We now introduced every part of AMD's effort to popularize Confidential Computing, now we will proceed by giving instructions to start such machines using QEMU/KVM and we will run some benchmarks to measure how these technlogies impact performance.
+    We now introduced every part of AMD's effort to popularize Confidential Computing, now we will proceed by giving instructions to start such machines using QEMU/KVM and we will run some benchmarks to measure how these technologies impact performance.
 
 
 \section{Environment}
 \label{sec:environment}
+    We are running our experiments in QEMU/KVM virtual machines, we are assigning 16GB of RAM and 16 vCPUs each, check the table \ref*{tab:experiment-environment} to see more details about our hardware and software versions. 
 
-    \begin{itemize}
-        \item mention we need uefi and this is why we have ovmf
-    \end{itemize}
-    OVMF is a project maintanied by TianoCore aiming to enable UEFI support for virtual machines, it is based on EDK 2, we will use OVMF to generate the executable firmware and the non-volatile variable store, it is important to create a vm-specific cody of OVMF\_vars.fd because the variable store should be private for every virtual machine
+    \begin{description}
+        \item[QEMU] is a generic open source machine emulator and virtualizer, we will use QEMU together with KVM, the Kernel Virtual machine to virtualize our machines.
+        \item[OVMF] is a project maintained by TianoCore aiming to enable UEFI support for virtual machines, it is based on EDK 2, we will use OVMF to generate the executable firmware and the non-volatile variable store, it is important to create a vm-specific copy of OVMF\_vars.fd because the variable store should be private for every virtual machine. UEFI support is mandatory to run a SEV-SNP machine.
+    \end{description}
 
-    QEMU is a generic open source machine emulator and virtualizer, we will use QEMU toghether with KVM, the Kernel Virtual machine to virtualize our machines.
+
     \begin{table*}
+        \small
         \centering
         \label{tab:experiment-environment}
         \begin{tabular}{l|l}
@@ -169,137 +166,36 @@ AMD Secure Encryption (0x8000001f):
     \end{table*}
 
 \section{Benchmarks}
-    We expect the aforementioned enctyption tenchinques used in SEV/SEV-ES/SEV-SNP cause a degradation in performance, especially for CPU intensive operations and memory-intensive workloads, to quantify the price we have to pay to have a more secure virtual environment we are running three distinct kinds of benchmarks: Compilation, Memory Benchmarks and I/O benchmarks. We are using \href{rcastellotti/tinyben}(https://github.com/rcastellotti/tinyben) \cite{tinyben}, an experimental benchmarking tool aimed to replace the popular Phoronix Test Suite \cite{pts} benchmarking suite.
+    We expect the aforementioned encryption techniques used in SEV/SEV-ES/SEV-SNP cause a degradation in performance, especially for memory-intensive workloads, additionally we want to investigate whether this technology slows down CPU intensive workloads. To quantify the price we have to pay to have a more secure virtual environment we are running three distinct kinds of benchmarks: Compilation, Memory Benchmarks and I/O benchmarks. We are using \href{rcastellotti/tinyben}(https://github.com/rcastellotti/tinyben) \cite{tinyben}, an experimental benchmarking tool aimed to replace the popular Phoronix Test Suite \cite{pts} benchmarking suite.
 
     \begin{description}
-        \item[Compilation Benchmarks] We are using compilation as an all-around benchmark because it is a "real world" benchmark. We are compiling some popular opensource projects like \href{https://github.com/godotengine/godot}{Godot Game Engine}, \href{https://github.com/imagemagick/imagemagick}{ImageMagick} (using gcc), \href{https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git}{Linux} (defconfig), the entire \href{https://github.com/llvm/llvm-project}{LLVM Project} (using ninja) and measuring how long does it take to complete the compilation process.
-        \item[Memory Benchmarks] To bechmark memory we are using ssvb/tinymembench \cite{tinymembench}, a tool to measure memory throughput and latency, we are mainly interested in bandwidth for the \texttt{MEMCPY} and \texttt{MEMSET} operations
-        \item[I/O Benchmarks] To measure I/O performance we are running two different benchmarks, first we are performing 2500 sqlite insertions in a table, then we are running redis-benchmark, a tool shipped toghether with redis. We are interested in Requests per Second and latency for the main operations. 
+        \item[Compilation Benchmarks] We are using compilation as an all-around benchmark because it is a "real world" benchmark. We are compiling some popular open-source projects like \href{https://github.com/godotengine/godot}{Godot Game Engine}, \href{https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git}{Linux} (defconfig), the entire \href{https://github.com/llvm/llvm-project}{LLVM Project} (using ninja) and measuring how long does it take to complete the compilation process.
+        \item[Memory Benchmarks] To benchmark memory we are using ssvb/tinymembench \cite{tinymembench}, a tool to measure memory throughput and latency, we are mainly interested in bandwidth for the \texttt{MEMCPY} and \texttt{MEMSET} operations
+        \item[I/O Benchmarks] To measure I/O performance we are running two different benchmarks, first we are performing 2500 sqlite insertions in a table, then we are running redis-benchmark, a tool shipped toghether with redis. We are interested in Requests per Second and latency for the main operations (namely SET and GET)
     \end{description}
 
-    As we can see in table \ref{tab:tinyben-results} the overhead introduced by the usage of Confidential Computing technology across the three categories of benchmarks is generally mild, and negligible in certain cases (ImageMagick compilation and Sqlite benchmark), further investigation tweaking the amount of resources available to each machine is necessary to correcly esteem the exact performance degradation values.
+    As we can see in table \ref{tab:tinyben-results} the overhead introduced by the usage of Confidential Computing technology across the three categories of benchmarks is generally mild, and negligible in almost every benchmark, with the exception for LZ4-compression. further investigation tweaking the amount of resources available to each machine is necessary to correcly esteem the exact performance degradation values.
 
-    We ran some additional benchmarks regarding the different storage virtualization techniques, more specifically we tested \textbf{virtio-scsi}, 
-    \textbf{virtio-blk} and \textbf{nvme} technologies. Virtio is the main platform for IO virtualization in KVM, essentially it provides a common framework for hypervisors to do IO virtualization.
-
-    \begin{description}
-        \item[nvme] is the userspace NVMe driver that enables virtual machines to interact with NVMe devices
-        \item[virtio-blk] devices are very simple block devices, the frontend driver reads and writes by appending commands to the virtualization queue so that the Backedn driver can process them on the host.
-        \item[virtio-scsi] aims to overcome some limitations introduced by virtio-blk, support more devices per guest (one PCI device per disk is not a limiting factor anymore) and supports technlogies like multiqueueing while keeping the performances of virtio-blk, additionally virtio-scsi provides a passthrough technlogy to present physical storage devices directly to guests
-    \end{description}
-
-    We perform some measurements using the fio \cite{fio} benchmarking tool, we use the same measurements used in \cite{spool} to evaluate: bandwidth, average latency and IOPS, we use the \texttt{--direct=1} flag to use unbuffered I/O.
-    \begin{table*}
-        \centering
-        \label{tab:fio-benchmarks}
-        \begin{tabular}{l|r|r}
-                        \hline
-
-        \textbf{benchmark} & \textbf{test cases} & \textbf{FIO Configuration (bs, rw, iodepth, numjobs)} \\
-        \hline
-        bandwidth          &  read               & (128K, read, 128, 1)                                  \\
-        bandwidth          & write               & (128K, write, 128, 1)                                 \\
-        IOPS               &  randread           &(4K, randread, 32, 4)                                  \\
-        IOPS               & mixread             & (4K, randread 70\%, 32, 4)                            \\
-        IOPS               &  mixwrite           & (4K, randwrite 30\%, 32, 4)                           \\
-        IOPS               &  randwrite          &  (4K, randwrite, 32, 4 )                              \\
-        average latency    &  randwrite          & (4K, randread, 1, 1 )                                 \\
-        average latency    &  randwrite          & (4K, randwrite, 1, 1 )                                \\
-        average latency    &  read               &(4K, read, 1, 1 )                                      \\
-        average latency    &  write	             & (4K, write, 1, 1 )                                    \\
-        \end{tabular}
-        \caption{Fio benchmarks, from \cite{spool}} 
-    \end{table*}
-
+    One reason why CPU-intensive workloads are little to no penalized by SEV-SNP is the processor is not doing much more when executing that kind of workload on a confidential machine, the instructions that really slow down are \texttt{VMEXIT} and \texttt{VMRUN}, we are not issuing any of those during the compilation of a certain program. This is good news, it means we don't have to sacrifice performance to have a safer environment.
 
     \begin{figure}
         \centering
-        \includegraphics[width=\columnwidth]{img/bw.pdf}
-        \caption{Storage Bandwidth Benchmarks}
+        \includegraphics[width=\columnwidth]{img/compilation-benchmark.pdf}
+        \caption{Compilation benchmarks, in milliseconds}
     \end{figure}
 
     \begin{figure}
         \centering
-        \includegraphics[width=\columnwidth]{img/al.pdf}
-        \caption{Average Latency}
+        \includegraphics[width=\columnwidth]{img/tinymembenchmark.pdf}
+        \caption{tinymembench benchmarks, \texttt{MEMSET} and \texttt{MEMCPY}}
     \end{figure}
 
     \begin{figure}
         \centering
-        \includegraphics[width=\columnwidth]{img/iops.pdf}
-        \caption{I/O operations per second benchmark}
+        \includegraphics[width=\columnwidth]{img/misc.pdf}
+        \caption{Miscellaneous benchmarks, lz4 compression and decompression and Sqlite insertions}
     \end{figure}
 
-    \begin{table*}
-        \label{tab:experimentasdasdas-environment}
-        \begin{tabular}{llr}
-            \hline
-            \textbf{mode}& \textbf{storage} & \textbf{result} \\
-            \hline
-            read  & blk  & 0.400772 \\
-            read  & nvme & 0.657459 \\
-            read  & scsi & 0.276944 \\
-            write & blk  & 0.695312 \\
-            write & nvme & 0.912306 \\
-            write & scsi & 0.740106 \\ 
-            \hline
-        \end{tabular}
-        \hfill
-        \label{tab:sadasdasdasdasd-environment}
-        \begin{tabular}{llr}
-            \hline
-            \textbf{mode}& \textbf{storage} & \textbf{result} \\
-            \hline
-            mixread   & blk  & 0.806119 \\
-            mixread   & nvme & 0.957797 \\
-            mixread   & scsi & 0.908825 \\
-            mixwrite  & blk  & 0.841954 \\
-            mixwrite  & nvme & 0.838740 \\
-            mixwrite  & scsi & 0.836713 \\
-            randread  & blk  & 0.780862 \\
-            randread  & nvme & 0.826227 \\
-            randread  & scsi & 0.837637 \\
-            randwrite & blk  & 0.808918 \\
-            randwrite & nvme & 0.869906 \\
-            randwrite & scsi & 0.840391 \\
-            \hline
-        \end{tabular}
-        \hfill
-        \label{tab:experimasdasdasdadsent-environment}
-        \begin{tabular}{llr}
-            \hline
-            \textbf{mode}& \textbf{storage} & \textbf{result} \\
-            \hline
-            randread  & blk  & 1.209520 \\
-            randread  & nvme & 1.002932 \\
-            randread  & scsi & 1.184902 \\
-            randwrite & blk  & 1.075011 \\
-            randwrite & nvme & 1.182046 \\
-            randwrite & scsi & 1.168258 \\
-            read      & blk  & 1.182743 \\
-            read      & nvme & 0.938761 \\
-            read      & scsi & 1.141962 \\
-            write     & blk  & 1.106275 \\
-            write     & nvme & 0.900095 \\
-            write     & scsi & 1.136616 \\
-            \hline
-        \end{tabular}
-        \caption{bw iops al environment}
-    \end{table*}
-
-    The benchmarks highlight some interesting patterns: average latency is barely impacted
-
-    \section{Future Work}
-        Futher performance evaluation for SEV/SEV-ES/SEV-SNP confidential virtual machines will include:
-
-    \begin{itemize}
-        \item repeating microbenchmarks and fio benchmarks tweaking machines configuration (vCPUs, RAM, storage virtualizaton)
-        \item analyzing IO performance when using SEV Trusted Input Output \cite{tio}
-        \item analyzing whether having multiple SEV machines on the same physical host incurs in a large overhead
-        \item analyze performance overhead caused by \texttt{VMRUN} and \texttt{VMEXIT} when SEV-ES is enabled.
-        \item exploring Confidential Containers \cite{coco} project to identify what is worth benchmarking
-        \item understand AMD Secure VM Service Module \cite{svsm}, a module to offload sensitive opearations ontto a privileged guest and see if this leads to a performance improvement
-    \end{itemize}
 
     \begin{table*}
         \centering
@@ -322,6 +218,135 @@ AMD Secure Encryption (0x8000001f):
         \caption{Comparing benchmark results run on two QEMU vms (16 vCPUs, 16GB ram, virtio-scsi storage). HIB and LIB mean respectively "Higher is Better" and "Lower is Better", RPS stands for "Requests Per Second"} 
     \end{table*}
 
+
+    We ran some additional benchmarks regarding the different storage virtualization techniques, more specifically we tested \textbf{virtio-scsi}, 
+    \textbf{virtio-blk} and \textbf{nvme} technologies. Virtio is the main platform for IO virtualization in KVM, essentially it provides a common framework for hypervisors to do IO virtualization.
+
+    \begin{description}
+        \item[nvme] is the user-space NVMe driver that enables virtual machines to interact with NVMe devices
+        \item[virtio-blk] devices are very simple block devices, the front-end driver reads and writes by appending commands to the virtualization queue so that the back-end driver can process them on the host.
+        \item[virtio-scsi] aims to overcome some limitations introduced by virtio-blk, support more devices per guest (one PCI device per disk is not a limiting factor anymore) and supports technologies like multiqueueing while keeping the performances of virtio-blk, additionally virtio-scsi provides a pass-through technology to present physical storage devices directly to guests
+    \end{description}
+
+    We perform some measurements using the FIO \cite{fio} benchmarking tool, we use the same measurements used in \cite{spool} to evaluate: bandwidth, average latency and IOPS, we use the \texttt{--direct=1} flag to use unbuffered I/O.
+    \begin{table*}
+        \centering
+        \label{tab:fio-benchmarks}
+        \begin{tabular}{l|r|r}
+        \hline
+        \textbf{benchmark} & \textbf{test cases} & \textbf{FIO Configuration (bs, rw, iodepth, numjobs)} \\
+        \hline
+        bandwidth          &  read               & (128K, read, 128, 1)                                  \\
+        bandwidth          & write               & (128K, write, 128, 1)                                 \\
+        IOPS               &  randread           &(4K, randread, 32, 4)                                  \\
+        IOPS               & mixread             & (4K, randread 70\%, 32, 4)                            \\
+        IOPS               &  mixwrite           & (4K, randwrite 30\%, 32, 4)                           \\
+        IOPS               &  randwrite          &  (4K, randwrite, 32, 4 )                              \\
+        average latency    &  randwrite          & (4K, randread, 1, 1 )                                 \\
+        average latency    &  randwrite          & (4K, randwrite, 1, 1 )                                \\
+        average latency    &  read               &(4K, read, 1, 1 )                                      \\
+        average latency    &  write	             & (4K, write, 1, 1 )                                    \\
+        \end{tabular}
+        \caption{FIO benchmarks, from \cite{spool}} 
+    \end{table*}
+
+    \begin{figure}
+        \centering
+        \includegraphics[width=\columnwidth]{img/bw.pdf}
+        \caption{Storage Bandwidth Benchmarks}
+    \end{figure}
+
+    \begin{figure}
+        \centering
+        \includegraphics[width=\columnwidth]{img/al.pdf}
+        \caption{Average Latency Benchmarks}
+    \end{figure}
+
+    \begin{figure}
+        \centering
+        \includegraphics[width=\columnwidth]{img/iops.pdf}
+        \caption{IOPS benchmarks}
+    \end{figure}
+
+    \begin{table}
+        \small
+        \label{tab:experimentasdasdas-environment}
+        \begin{tabular}{llllr}
+            \hline
+            \textbf{mode}& \textbf{storage} & \textbf{nosev} & \textbf{sev} & \textbf{result} \\
+            \hline
+            read & blk & 2068866712 & 829144265 & 0.400772 \\
+            read & nvme & 2255760134 & 1483068817 & 0.657459 \\
+            read & scsi & 2644684295 & 732429620 & 0.276944 \\
+            write & blk & 2010752479 & 1398101333 & 0.695312 \\
+            write & nvme & 1664716006 & 1518729595 & 0.912306 \\
+            write & scsi & 1913978295 & 1416545941 & 0.740106 \\
+            \hline
+        \end{tabular}
+        \caption{FIO bandwidth benchmarks results, measured in KB/s,  ratio is the ratio between \textbf{sev} and \textbf{nosev}}
+    \end{table}
+    \begin{table}
+        \small
+        \label{tab:sadasdasdasdasd-environment}
+        \begin{tabular}{llllr}
+            \hline
+            \textbf{mode} & \textbf{storage} &  \textbf{nosev} & \textbf{sev} &\textbf{result} \\
+            \hline
+            mixread & blk & 24324.394544 & 19608.347670 & 0.806119 \\
+            mixread & nvme & 16936.555110 & 16221.782178 & 0.957797 \\
+            mixread & scsi & 23418.259782 & 21283.104652 & 0.908825 \\
+            mixwrite & blk & 22876.690811 & 19261.131521 & 0.841954 \\
+            mixwrite & nvme & 15671.907694 & 13144.662288 & 0.838740 \\
+            mixwrite & scsi & 22213.710702 & 18586.500284 & 0.836713 \\
+            randread & blk & 24786.686838 & 19354.991140 & 0.780862 \\
+            randread & nvme & 16517.169681 & 13646.936332 & 0.826227 \\
+            randread & scsi & 24944.714055 & 20894.627770 & 0.837637 \\
+            randwrite & blk & 23045.626374 & 18642.013938 & 0.808918 \\
+             randwrite & nvme & 16179.730897 & 14074.845638 & 0.869906 \\
+             randwrite & scsi & 22775.325804 & 19140.186916 & 0.840391 \\
+            \hline
+        \end{tabular}
+        \caption{FIO IOPS benchmarks results, ratio is the ratio between \textbf{sev} and \textbf{nosev}}
+    \end{table}
+    \begin{table}
+        \small
+        \label{tab:al}
+        \begin{tabular}{lllll}
+            \hline
+            \textbf{mode}& \textbf{storage} & \textbf{nosev} & \textbf{sev} & \textbf{ratio} \\
+            \hline
+            randread & blk & 36732.676746 & 44428.919037 & 1.209520 \\
+            randread & nvme & 43056.001194 & 43182.237293 & 1.002932 \\
+            randread & scsi & 37267.866497 & 44158.765942 & 1.184902 \\
+            randwrite & blk & 39318.967918 & 42268.305611 & 1.075011 \\
+            randwrite & nvme & 40921.898750 & 48371.563309 & 1.182046 \\
+            randwrite & scsi & 40428.971912 & 47231.466854 & 1.168258 \\
+            read & blk & 34110.888638 & 40344.405910 & 1.182743 \\
+            read & nvme & 39693.322182 & 37262.537930 & 0.938761 \\
+            read & scsi & 35575.824402 & 40626.232517 & 1.141962 \\
+            write & blk & 37879.406013 & 41905.050934 & 1.106275 \\
+             write & nvme & 51967.809612 & 46775.977871 & 0.900095 \\
+             write & scsi & 40000.623734 & 45465.357731 & 1.136616 \\
+            \hline
+        \end{tabular}
+        \caption{FIO average latency benchmarks, measured in nanoseconds, ratio is the ratio between \textbf{sev} and \textbf{nosev}}
+    \end{table}
+
+    The benchmarks highlight some interesting patterns: average latency is barely impacted, while bandwidth is severely impacted, especially in read workloads, this might be related to the usage of the aforementioned \textbf{Reverse Map Table}. 
+
+    \section{Future Work}
+        Further performance evaluation for SEV/SEV-ES/SEV-SNP confidential virtual machines will include:
+
+    \begin{itemize}
+        \item repeating micro-benchmarks and FIO benchmarks tweaking machines configuration (vCPUs, RAM, storage virtualization)
+        \item analyzing IO performance when using SEV Trusted Input Output \cite{tio}
+        \item analyzing whether having multiple SEV machines on the same physical host incurs in a large overhead
+        \item analyze performance overhead caused by \texttt{VMRUN} and \texttt{VMEXIT} when SEV-ES is enabled.
+        \item exploring Confidential Containers \cite{coco} project to identify what is worth benchmarking
+        \item understand AMD Secure VM Service Module \cite{svsm}, a module to offload sensitive operations onto a privileged guest and see if this leads to a performance improvement
+    \end{itemize}
+
+    
 \printbibliography
 \appendix
 

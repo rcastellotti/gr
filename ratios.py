@@ -15,11 +15,11 @@ with open(args.file) as f:
             group, name, value1 = lines[i].split(',')
             _, _, value2 = lines[i + 1].split(',')
             ratio = float(value2) / float(value1)
-            ratios.append([group,name.split("-")[0],ratio])
+            ratios.append([group,name.split("-")[0],value1.replace("\n",""),value2.replace("\n",""),ratio])
     
     with open(f"benchmarks/{args.output}-ratios.csv", "w") as c:
         csv_writer = csv.writer(c)
-        csv_writer.writerow(["group","name","result"])
+        csv_writer.writerow(["group","name","nosev","sev","result"])
         for ratio in ratios:
             print(f"{ratio}")
             csv_writer.writerow(ratio)
