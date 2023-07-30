@@ -10,12 +10,9 @@ Compile the custom OVMF and QEMU provided by AMD:
 ```
 
 ### Misc
+Before launching guests you should run `./prepare.sh`
 
-- [config](.config/) folder contains some configurations for ubuntu cloudimg.
-- Download an ubuntu image: `wget https://cloud-images.ubuntu.com/kinetic/current/kinetic-server-cloudimg-amd64.img`
-- before launching guests you should run `./prepare.sh`
-
-This readme assumes ovmf and qemu are in `./usr`, i.e. that you ran `./build.sh ./usr`, if that is not the case adapt the following commands to reflect your edit.
+The following part assumes ovmf and qemu are in `./usr`, i.e. that you ran `./build.sh ./usr`, if that is not the case adapt the following commands accordingly.
 
 ### Launch a NOSEV guest. 
 
