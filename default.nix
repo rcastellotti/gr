@@ -19,10 +19,6 @@ mkShell {
     gdb
     # needed to run cpuid
     cpuid
-    # benchmarking and visualization
-    fio
-    python310Packages.seaborn
-    python310Packages.jupyterlab
   ];
   LD_LIBRARY_PATH = lib.makeLibraryPath libraries;
 }
