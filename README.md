@@ -1,6 +1,7 @@
 # GR - AMD Confidential Computing Technologies Evaluation Report
 
 ## Instructions to launch SEV machines
+We use [nix](https://nixos.org) to manage our dependencies, before running any command activate a nix shell running (in the repo root directory) `nix-shell`
 
 ### Prepare the host toolchain
 Compile the custom OVMF and QEMU provided by AMD:
