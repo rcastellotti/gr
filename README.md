@@ -36,7 +36,7 @@ sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH ./sev.sh ./usr/qemu/usr/bin/
 - SEV machine: connect using ssh `ssh -p 2222 ubuntu@localhost`
 - NOSEV machine: connect using ssh `ssh -p 2223 ubuntu@localhost`
 
-## misc
+## resources
 - <https://cloudinit.readthedocs.io/en/latest/reference/examples.html>
 - <https://github.com/AMDESE/linux>
 - <https://github.com/AMDESE/qemu>
