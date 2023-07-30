@@ -6,6 +6,7 @@ mkShell {
   buildInputs = libraries;
   nativeBuildInputs = [
     git
+    wget
     # needed to compile qemu with user network support
     ninja
     gnumake
