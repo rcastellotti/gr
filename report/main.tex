@@ -8,7 +8,7 @@
 \usepackage{xcolor}
 \usepackage{graphicx}
 \usepackage{float}
-\hypersetup{pageanchor=false}
+\hypersetup{pageanchor=true}
 \bibliography{ref}
 \definecolor{bg}{rgb}{0.97,0.97,0.97}
 
@@ -22,6 +22,7 @@
 \begin{itemize}
     \item should I use bold or italic when introducing a name?
     \item how should i decide whether to use a link or a citation? link non clickable on paper?
+    \item can you help me position my graphs and tables better?
 \end{itemize}
 \begin{abstract}
 We report a preliminary performance evaluation of AMD SEV (Secure Environment Virtualization) technologies.
@@ -43,15 +44,15 @@ It is logic customers want to be sure no one can access their disks, memory or C
 \textbf{AMD Secure Memory Encryption (SME)} is the basic building block for the more sophisticated technologies we'll cover later, so it is imperative we understand how it works. In a machine with \textbf{SME} enabled memory operations are performed via dedicated hardware, in fact, an entirely different chip on die. AMD EPYC™ processors introduced two hardware security components:
 
 \begin{description}
-    \item [AES-128 hardware encryption engine] embedded in memory controller,a chip whose job is to make sure data transferred to and from the main memory is encrypted during write operations and decrypted during read operations. See \ref{fig:memory-encryption} to better understand how data is managed when \textbf{SME} is used. This memory controller is inside the EPYC SOC, memory lines leaving the SOC are always encrypted
+    \item [AES-128 hardware encryption engine] embedded in memory controller,a chip whose job is to make sure data transferred to and from the main memory is encrypted during write operations and decrypted during read operations. See \ref{fig:memory-encryption-fig} to better understand how data is managed when \textbf{SME} is used. This memory controller is inside the EPYC SOC, memory lines leaving the SOC are always encrypted
     \item [AMD Secure Processor:] a small processor providing cryptographic functionality for secure key generation and key management
 \end{description}
 
 \begin{figure}
-    \label{fig:memory-encryption}
     \centering
     \includegraphics[scale=0.9]{img/read-write.pdf}
     \caption{Memory Encryption Behavior, from \cite{memory-encryption}}
+    \label{fig:memory-encryption-fig}
 \end{figure}
 
 The AES engine needs a key to work with, this is generated securely by the \textbf{AMD Secure-Processor (SMD-SP)}, a 32 bit micro-controller and it is not accessible by software running on the main CPU, furthermore \textbf{SME} does not require software running on main CPU to participate in Key Management making the enclave even more secure by reducing the attack surface.
@@ -159,7 +160,6 @@ We are running our experiments in QEMU/KVM virtual machines, we are assigning 16
 \begin{table*}[ht]
     \small
     \centering
-    \label{tab:experiment-environment}
     \begin{tabular}{l|l}
         \hline
         Host CPU      & \texttt{AMD EPYC 7713P 64-Cores}                                            \\
@@ -173,6 +173,7 @@ We are running our experiments in QEMU/KVM virtual machines, we are assigning 16
         \hline
     \end{tabular}
     \caption{Experiment Environment}
+    \label{tab:experiment-environment}
 \end{table*}
 
 \section{Benchmarks}
@@ -225,7 +226,6 @@ One reason why CPU-intensive workloads are little to no penalized by SEV-SNP is 
 
 \begin{table*}
     \centering
-    \label{tab:tinyben-results}
     \begin{tabular}{l|r|r}
         \textbf{benchmark}                        & \textbf{SEV-SNP} & \textbf{NOSEV} \\
         \hline
@@ -242,6 +242,7 @@ One reason why CPU-intensive workloads are little to no penalized by SEV-SNP is 
         redis-benchmark GET average latency (LIB) &  0.275 msec	     & 0.233 msec     \\
     \end{tabular}
     \caption{Comparing benchmark results run on two QEMU vms (16 vCPUs, 16GB ram, virtio-scsi storage). HIB and LIB mean respectively "Higher is Better" and "Lower is Better", RPS stands for "Requests Per Second"} 
+    \label{tab:tinyben-results}
 \end{table*}
 
 We ran some additional benchmarks regarding the different storage virtualization techniques, more specifically we tested \textbf{virtio-scsi}, \textbf{virtio-blk} and \textbf{nvme} technologies. Virtio is the main platform for IO virtualization in KVM, essentially it provides a common framework for hypervisors to do IO virtualization.
@@ -256,7 +257,6 @@ We perform some measurements using the FIO \cite{fio} benchmarking tool, we use 
 
 \begin{table*}
     \centering
-    \label{tab:fio-benchmarks}
     \begin{tabular}{l|r|r}
         \hline
         \textbf{benchmark} & \textbf{test cases} & \textbf{FIO Configuration (bs, rw, iodepth, numjobs)} \\
@@ -273,32 +273,32 @@ We perform some measurements using the FIO \cite{fio} benchmarking tool, we use 
         average latency    &  write	             & (4K, write, 1, 1 )                                    \\
     \end{tabular}
     \caption{FIO benchmarks, from \cite{spool}} 
+    \label{tab:fio-benchmarks}
 \end{table*}
 
 \begin{figure}
-    \label{fig:fio-bw}
     \centering
     \includegraphics[width=\columnwidth]{img/bw.pdf}
     \caption{Storage Bandwidth Benchmarks}
+    \label{fig:fio-bw}
 \end{figure}
 
 \begin{figure}
-    \label{fig:fio-al}
     \centering
     \includegraphics[width=\columnwidth]{img/al.pdf}
     \caption{Average Latency Benchmarks}
+    \label{fig:fio-al}
 \end{figure}
 
 \begin{figure}
-    \label{fig:fio-iops}
     \centering
     \includegraphics[width=\columnwidth]{img/iops.pdf}
     \caption{IOPS benchmarks}
+    \label{fig:fio-iops}
 \end{figure}
 
 \begin{table}
     \small
-    \label{tab:experimentasdasdas-environment}
     \begin{tabular}{llllr}
         \hline
         \textbf{mode}& \textbf{storage} & \textbf{nosev} & \textbf{sev} & \textbf{result} \\
@@ -312,11 +312,11 @@ We perform some measurements using the FIO \cite{fio} benchmarking tool, we use 
         \hline
     \end{tabular}
     \caption{FIO bandwidth benchmarks results, measured in KB/s,  ratio is the ratio between \textbf{sev} and \textbf{nosev}}
+    \label{tab:experimentasdasdas-environment}
 \end{table}
 
 \begin{table}
     \small
-    \label{tab:sadasdasdasdasd-environment}
     \begin{tabular}{llllr}
         \hline
         \textbf{mode} & \textbf{storage} &  \textbf{nosev} & \textbf{sev} &\textbf{result} \\
@@ -336,11 +336,11 @@ We perform some measurements using the FIO \cite{fio} benchmarking tool, we use 
         \hline
     \end{tabular}
     \caption{FIO IOPS benchmarks results, ratio is the ratio between \textbf{sev} and \textbf{nosev}}
+    \label{tab:sadasdasdasdasd-environment}
 \end{table}
 
 \begin{table}
     \small
-    \label{tab:al}
     \begin{tabular}{lllll}
         \hline
         \textbf{mode}& \textbf{storage} & \textbf{nosev} & \textbf{sev} & \textbf{ratio} \\
@@ -360,6 +360,7 @@ We perform some measurements using the FIO \cite{fio} benchmarking tool, we use 
         \hline
     \end{tabular}
     \caption{FIO average latency benchmarks, measured in nanoseconds, ratio is the ratio between \textbf{sev} and \textbf{nosev}}
+    \label{tab:al}
 \end{table}
 
 The FIO benchmarks highlight some interesting patterns: average latency is barely impacted, while bandwidth is severely impacted, especially in read workloads, this might be related to the usage of the aforementioned \textbf{Reverse Map Table}.
