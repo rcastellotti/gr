@@ -4,7 +4,7 @@
 \usepackage{inconsolata}
 \usepackage{bookmark}
 \usepackage{minted}
-\usepackage[font=small,skip=0pt]{caption}
+\usepackage[font=small,skip=2pt]{caption}
 \usepackage{xcolor}
 \usepackage{graphicx}
 \usepackage{float}
@@ -19,11 +19,6 @@
 \maketitle
 
 
-\begin{itemize}
-    \item should I use bold or italic when introducing a name?
-    \item how should i decide whether to use a link or a citation? link non clickable on paper?
-    \item can you help me position my graphs and tables better?
-\end{itemize}
 \begin{abstract}
 We report a preliminary performance evaluation of AMD SEV (Secure Environment Virtualization) technologies.
 We focus on virtual machines, we are using QEMU/KVM as Hypervisor and we are running them on a powerful machine we control.
@@ -34,19 +29,19 @@ Confidential Computing technologies may be predominant in the future, as more an
 
 \section{Introduction}
 
-\textbf{Confidential Computing} is a topic that started to become relevant in the last years. In the last two decades the way software is shipped to production changed radically, the majority of code deployed nowadays is hosted by cloud providers (Google Cloud Platform, Amazon Web Services, Microsoft Azure, etc.) while some code is still run on-premise for privacy/safety reasons. Confidential Computing aims to provide a safe environment for developers to run highly sensitive code on machines they don't own. 
+\textit{Confidential Computing} is a topic that started to become relevant in the last years. In the last two decades the way software is shipped to production changed radically, the majority of code deployed nowadays is hosted by cloud providers (Google Cloud Platform, Amazon Web Services, Microsoft Azure, etc.) while some code is still run on-premise for privacy/safety reasons. Confidential Computing aims to provide a safe environment for developers to run highly sensitive code on machines they don't own. 
 
-It is logic customers want to be sure no one can access their disks, memory or CPU registers, neither other customers running virtual machines on the same hardware, nor whoever is controlling the hypervisor, be it  the cloud vendor  or, in worst case scenarios, malign actors who compromised the physical machines. Encryption at rest, designed to prevent the attacker from accessing the unencrypted data by ensuring the data is encrypted when on disk, has been around for a long time, and is currently supported by all major providers \cite{aws-enc}, \cite{gcp-enc}, \cite{azure-enc} but leaves a big part of daily computing unencrypted, namely RAM and CPU registers, to tackle this issue major chip producers started to develop technologies to enable\textbf{confidential computing}, namely AMD Secure Encrypted Virtualization (SEV) \cite{memory-encryption}, Intel Trusted Domain Extensions (TDX) \cite{tdx} and Arm Confidential Compute Architecture (CCA) \cite{cca}. In this article we will focus on AMD tecnhlogies.
+It is logic customers want to be sure no one can access their disks, memory or CPU registers, neither other customers running virtual machines on the same hardware, nor whoever is controlling the hypervisor, be it  the cloud vendor  or, in worst case scenarios, malign actors who compromised the physical machines. Encryption at rest, designed to prevent the attacker from accessing the unencrypted data by ensuring the data is encrypted when on disk, has been around for a long time, and is currently supported by all major providers \cite{aws-enc}, \cite{gcp-enc}, \cite{azure-enc} but leaves a big part of daily computing unencrypted, namely RAM and CPU registers, to tackle this issue major chip producers started to develop technologies to enable \textit{Confidential computing}, namely AMD Secure Encrypted Virtualization (SEV) \cite{memory-encryption}, Intel Trusted Domain Extensions (TDX) \cite{tdx} and Arm Confidential Compute Architecture (CCA) \cite{cca}. In this article we will focus on summarizing the AMD tecnhlogies before we run some measurements to evaluate the impact of Confidential Computing technlogies.
 
 \section{Background}
 \subsection{AMD Secure Memory Encryption (SME)}
 
-\textbf{AMD Secure Memory Encryption (SME)} is the basic building block for the more sophisticated technologies we'll cover later, so it is imperative we understand how it works. In a machine with \textbf{SME} enabled memory operations are performed via dedicated hardware, in fact, an entirely different chip on die. AMD EPYC™ processors introduced two hardware security components:
+\textit{AMD Secure Memory Encryption (SME)} is the basic building block for the more sophisticated technologies we'll cover later, so it is imperative we understand how it works. In a machine with \textit{SME} enabled memory operations are performed via dedicated hardware, in fact, an entirely different chip on die. AMD EPYC™ processors introduced two hardware security components:
 
-\begin{description}
-    \item [AES-128 hardware encryption engine] embedded in memory controller,a chip whose job is to make sure data transferred to and from the main memory is encrypted during write operations and decrypted during read operations. See \ref{fig:memory-encryption-fig} to better understand how data is managed when \textbf{SME} is used. This memory controller is inside the EPYC SOC, memory lines leaving the SOC are always encrypted
-    \item [AMD Secure Processor:] a small processor providing cryptographic functionality for secure key generation and key management
-\end{description}
+\begin{itemize}
+    \item a \textit{AES-128 hardware encryption engine} embedded in memory controller,a chip whose job is to make sure data transferred to and from the main memory is encrypted during write operations and decrypted during read operations. See Figure \ref{fig:memory-encryption-fig} to better understand how data is managed when \textit{SME} is used. This memory controller is inside the EPYC SOC, memory lines leaving the SOC are always encrypted
+    \item the \textit{AMD Secure Processor}, a small processor providing cryptographic functionality for secure key generation and key management
+\end{itemize}
 
 \begin{figure}
     \centering
@@ -55,7 +50,7 @@ It is logic customers want to be sure no one can access their disks, memory or C
     \label{fig:memory-encryption-fig}
 \end{figure}
 
-The AES engine needs a key to work with, this is generated securely by the \textbf{AMD Secure-Processor (SMD-SP)}, a 32 bit micro-controller and it is not accessible by software running on the main CPU, furthermore \textbf{SME} does not require software running on main CPU to participate in Key Management making the enclave even more secure by reducing the attack surface.
+The AES engine needs a key to work with, this is generated securely by the \textit{AMD Secure-Processor (SMD-SP)}, a 32 bit micro-controller and it is not accessible by software running on the main CPU, furthermore \textbf{SME} does not require software running on main CPU to participate in Key Management making the enclave even more secure by reducing the attack surface.
 
 The \textit{C-bit} is a bit present in any memory page and indicates whether the current page is to be encrypted, it can be retrieved together with some additional information by running the \texttt{cpuid} command to inspect leaf \texttt{0x8000001F}, as specified by AMD Reference Manual \cite{architecture-reference}:
 
@@ -86,13 +81,13 @@ AMD Secure Encryption (0x8000001f):
     minimum SEV guest ASID                   = 0x80 (128)
 \end{minted}
     
-SME is a very powerful mechanism to provide memory encryption, but it requires support from the Operating System/Hypervisor, \textbf{Transparent SME (TSME)} is a solution to encrypt every memory page regardless of the \textit{C-bit}, as the name suggests this technology provides encryption without further modification to OS/HV, this may be crucial because it means both Operating System developers and Hypervisor developers don't have to implement and mantain additional code and older operating systems can be run in a protected way with TSME.
+SME is a very powerful mechanism to provide memory encryption, but it requires support from the Operating System/Hypervisor, \textit{Transparent SME (TSME)} is a solution to encrypt every memory page regardless of the \textit{C-bit}, as the name suggests this technology provides encryption without further modification to OS/HV, this may be crucial because it means both Operating System developers and Hypervisor developers don't have to implement and mantain additional code and older operating systems can be run in a protected way with TSME.
 
 We now switch our focus to AMD SEV, a technology powered by AMD SME that enables Confidential Computing for Virtual Machines.
 
 \subsection{AMD Secure Encrypted Virtualization (SEV)}
 
-\textbf{AMD SEV} is an attempt to make virtual machines more secure to use by encrypting data to and from a virtual machine, and enables a new security model protecting code from higher privileged resources, such as hypervisors or some privileged code running on the physical machine hosting the virtual machines. In this context, as mentioned before, we should never trust the Hypervisor since it may be compromised or acting maliciously by default.
+\textit{AMD SEV} is an attempt to make virtual machines more secure to use by encrypting data to and from a virtual machine, and enables a new security model protecting code from higher privileged resources, such as hypervisors or some privileged code running on the physical machine hosting the virtual machines. In this context, as mentioned before, we should never trust the Hypervisor since it may be compromised or acting maliciously by default.
 
 \begin{figure}
     \centering
@@ -116,32 +111,32 @@ Similarly to AMD-SEV AMD-ES is completely transparent to application code, guest
 
 \subsection{AMD Secure Encrypted Virtualization-Secure Nested Paging (SEV-SNP)}
 
-After the introduction of AMD-SEV and AMD-ES AMD decided to introduce the next generation of SEV called Secure Nested Paging (SEV-SNP), this technology builds on top of the technologies we have seen and extends them further to implement strong memory integrity protection to prevent Hypervisor based attacks, such as \textbf{replay attacks} and \textbf{memory remapping}, \textbf{data corruption} and \textbf{memory aliasing}.
+After the introduction of AMD-SEV and AMD-ES AMD decided to introduce the next generation of SEV called Secure Nested Paging (SEV-SNP), this technology builds on top of the technologies we have seen and extends them further to implement strong memory integrity protection to prevent Hypervisor based attacks, such as \textit{replay attacks} and \textit{memory remapping}, \textit{data corruption} and \textit{memory aliasing}.
 Let's now explain what these attacks are before we cover how SEV-SNP mitigates them.
 
-\begin{description}
-    \item[replay attacks] a malicious actor captures a state at a certain moment and modifies memory successfully with those values
-    \item[data corruption] even though an attacker cannot read a memory he can simply corrupt the memory to trick the machine into unpredicted and possibly dangerous behavior
-    \item[memory aliasing] an external actor may map a memory page to multiple physical pages he controls
-    \item[memory remapping] the intruder maps a page to a different physical page
-\end{description}
+\begin{itemize}
+    \item a \textit{replay attack} happens when a malicious actor captures a state at a certain moment and modifies memory successfully with those values
+    \item \textit{data corruption} attacks happen when even though an attacker, knowing they are not able to read memory, decides to corrupt the memory to trick the machine into unpredicted and possibly dangerous behavior
+    \item a \textit{memory aliasing} attack happens when an external actor may map a memory page to multiple physical pages he controls
+    \item a \textit{memory remapping} attacks happens wheneverthe intruder maps a page to a different physical page
+\end{itemize}
 
 These attacks are a problem because a running program has no notion of memory integrity, it could end up in a state that was not originally considered by the developers and this may lead to huge security issues.
 
-The basic principle of \textbf{SEV-SNP} integrity is that if a VM is able to read a private (encrypted) page of memory, it must always read the value it last wrote. What this means is the VM should be able to throw an exception if the memory a process is trying to access was tampered by external actors.
+The basic principle of \textit{SEV-SNP} integrity is that if a VM is able to read a private (encrypted) page of memory, it must always read the value it last wrote. What this means is the VM should be able to throw an exception if the memory a process is trying to access was tampered by external actors.
 
 \subsubsection{Threat Model}
 In this computing model we consider:
 \begin{itemize}
-    \item \textbf{AMD System-On-Chip (SOC) hardware}, \textbf{AMD Secure Processor (AMD-SP)} and the \textbf{VM} are fully trusted, to this extend the VM should enable Full Disk Encryption (FDE) at rest, such as LUKS, major cloud providers have been supporting FDE for long time.
-    \item \textbf{BIOS} on the host system, the \textbf{Hypervisor}, \textbf{device drivers} and \textbf{other VMS} are fully untrusted, this means the threat model assumes they are malicious and may conspire to compromise the security of our Confidential Virtual Machine.
+    \item \textit{AMD System-On-Chip (SOC) hardware}, \textit{AMD Secure Processor (AMD-SP)} and the \textbf{VM} are fully trusted, to this extend the VM should enable Full Disk Encryption (FDE) at rest, such as LUKS, major cloud providers have been supporting FDE for long time.
+    \item \textbf{BIOS} on the host system, the \textbf{Hypervisor}, \textbf{device drivers} and \textbf{other VMS} as fully untrusted, this means the threat model assumes they are malicious and may conspire to compromise the security of our Confidential Virtual Machine.
 \end{itemize}
 
-The way SEV-SNP ensures protection against the attacks we mentioned before is by introducing a new data structure, a \textbf{Reverse Map Table (RMP)} that tracks owners of memory pages, by having this it is possible to enforce that only the owner of a certain memory page can alter it. A page can be owned by the VM, the Hypervisor or by the AMD Secure Processor. The RMP is used in conjunction with standard x86 page tables mechanisms to enforce memory restrictions and page access rights. RMP fixes replay, remapping and data corruption attacks. 
+The way SEV-SNP ensures protection against the attacks we mentioned before is by introducing a new data structure, a \textit{Reverse Map Table (RMP)} that tracks owners of memory pages, by having this it is possible to enforce that only the owner of a certain memory page can alter it. A page can be owned by the VM, the Hypervisor or by the AMD Secure Processor. The RMP is used in conjunction with standard x86 page tables mechanisms to enforce memory restrictions and page access rights. RMP fixes replay, remapping and data corruption attacks. 
 
-RMP checks are introduced for write operations on memory, however external (Hypervisor) read accesses do not require them because the AES encryption is protecting our memory.
+RMP checks are introduced for write operations on memory performed by the virtual machine, these are not needed in case  read accesses do not require them because the AES encryption is protecting our memory.
 
-To prevent memory remapping a technique called \textbf{Page Validation} is introduced. Inside each RMP entry there is \textit{Validated} bit, pages assigned to guests that have no validated bit set are not usable by the Hypervisor, the guest can only use the page after setting the validated bit through a \texttt{PVALIDATE} instruction. The VM will make sure that it is not possible to validate a SPA (system physical address) corresponding to a GPA (Guest Physical Address) more than once.
+To prevent memory remapping a technique called \textit{Page Validation} is introduced. Inside each RMP entry there is \textit{Validated} bit, pages assigned to guests that have no validated bit set are not usable by the Hypervisor, the guest can only use the page after setting the validated bit through a \texttt{PVALIDATE} instruction. The VM will make sure that it is not possible to validate a SPA (system physical address) corresponding to a GPA (Guest Physical Address) more than once.
  
 More details are discussed in the introductory white-paper \cite{sev-snp}
 
@@ -150,11 +145,11 @@ We now introduced all the main building blocks of AMD's effort to popularize Con
 \section{Environment}
 \label{sec:environment}
     
-We are running our experiments in QEMU/KVM virtual machines, we are assigning 16GB of RAM and 16 vCPUs each, check the table \ref*{tab:experiment-environment} to see more details about our hardware and software versions. 
+We are running our experiments in QEMU/KVM virtual machines, we are assigning 16GB of RAM and 16 vCPUs each, check the table \ref{tab:experiment-environment} to see more details about our hardware and software versions. 
 
 \begin{description}
     \item[QEMU] is a generic open source machine emulator and virtualizer \cite{qemu}, we use QEMU together with KVM, the Kernel Virtual machine to virtualize our machines.
-    \item[OVMF] is a project maintained by TianoCore \cite{ovmf} aiming to enable UEFI support for virtual machines, it is based on EDK 2, we will use OVMF to generate the executable firmware and the non-volatile variable store, it is important to create a vm-specific copy of \texttt{OVMF\_vars.fd}because the variable store should be private for every virtual machine. UEFI support is mandatory to run a SEV-SNP machine.
+    \item[OVMF] is a project maintained by TianoCore \cite{ovmf} aiming to enable UEFI support for virtual machines, it is based on EDK 2, we will use OVMF to generate the executable firmware and the non-volatile variable store, it is important to create a vm-specific copy of \texttt{OVMF\_vars.fd} because the variable store should be private for every virtual machine. UEFI support is mandatory to run a SEV-SNP machine.
 \end{description}
 
 \begin{table*}[ht]
@@ -177,17 +172,17 @@ We are running our experiments in QEMU/KVM virtual machines, we are assigning 16
 \end{table*}
 
 \section{Benchmarks}
-We expect the aforementioned encryption techniques used in SEV/SEV-ES/SEV-SNP cause a degradation in performance, especially for memory-intensive workloads, additionally we want to investigate whether this technology slows down CPU intensive workloads. To quantify the price we have to pay to have a more secure virtual environment we are running three distinct kinds of benchmarks: Compilation, Memory Benchmarks and I/O benchmarks. We are using \href{https://github.com/rcastellotti/tinyben}{rcastellotti/tinyben}, an experimental benchmarking tool aimed to replace the popular Phoronix Test Suite \cite{pts} benchmarking suite.
+We expect the aforementioned encryption techniques used in SEV/SEV-ES/SEV-SNP cause a degradation in performance, especially for memory-intensive workloads, additionally we want to investigate whether this technology slows down CPU intensive workloads. To quantify the price we have to pay to have a more secure virtual environment we are running three distinct kinds of benchmarks: Compilation, Memory Benchmarks and I/O benchmarks. We are using \texttt{rcastellotti/tinyben} \cite{tinyben}, an experimental benchmarking tool aimed to replace the popular Phoronix Test Suite \cite{pts} benchmarking suite.
 
 \begin{description}
     \item[Compilation Benchmarks] We are using compilation as an all-around benchmark because it is a "real world" benchmark. We are compiling some popular open-source projects like \href{https://github.com/godotengine/godot}{Godot Game Engine}, \href{https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git}{Linux} (defconfig), the entire \href{https://github.com/llvm/llvm-project}{LLVM Project} (using ninja) and measuring how long does it take to complete the compilation process. Check figure \ref{fig:tb-compilation} to see results.
-    \item[Memory Benchmarks] To benchmark memory we are using \href{https://github.com/ssvb/tinymembench}{ssvb/tinymembench}, a tool to measure memory throughput and latency, we are mainly interested in bandwidth for the \texttt{MEMCPY} and \texttt{MEMSET} operations. Check figure \ref{fig:tb-tinymembench} to see the results.
+    \item[Memory Benchmarks] To benchmark memory we are using \texttt{ssvb/tinymembench} \cite{tinymembench}, a tool to measure memory throughput and latency, we are mainly interested in bandwidth for the \texttt{MEMCPY} and \texttt{MEMSET} operations. Check figure \ref{fig:tb-tinymembench} to see the results.
     \item[I/O Benchmarks] To measure I/O performance we are running two different benchmarks, first we are performing 2500 sqlite insertions in a table, then we are running redis-benchmark, a tool shipped toghether with redis. We are interested in Requests per Second and latency for the main operations (namely SET and GET). Check figures \ref{fig:tb-redis} and \ref{fig:tb-redis-latency} to see the results.
 \end{description}
 
-As we can see in table \ref{tab:tinyben-results} the overhead introduced by the usage of Confidential Computing technology across the three categories of benchmarks is generally mild, and negligible in almost every benchmark, with the exception for LZ4-compression. further investigation tweaking the amount of resources available to each machine is necessary to correcly esteem the exact performance degradation values.
+As we can see in figures \ref{fig:tb-compilation}, \ref{fig:tb-tinymembench}, \ref{fig:tb-misc}, \ref{fig:tb-redis}, \ref{fig:tb-redis-latency} the overhead introduced by the usage of Confidential Computing technology across the three categories of benchmarks is generally mild, and negligible in almost every benchmark, with the exception for LZ4-compression. further investigation tweaking the amount of resources available to each machine is necessary to correcly esteem the exact performance degradation values.
 
-One reason why CPU-intensive workloads are little to no penalized by SEV-SNP is the processor is not doing much more when executing that kind of workload on a confidential machine, the instructions that really slow down are \texttt{VMEXIT} and \texttt{VMRUN}, we are not issuing any of those during the compilation of a certain program. This is good news, it means we don't have to sacrifice performance to have a safer environment.
+One reason why CPU-intensive workloads are little to no penalized by SEV-SNP is the processor might not be doing much more when executing that kind of workload on a confidential machine, the instructions that really slow down are \texttt{VMEXIT} and \texttt{VMRUN}, we are not issuing any of those during the compilation of a certain program.
 
 \begin{figure}[ht]
     \centering
@@ -224,28 +219,7 @@ One reason why CPU-intensive workloads are little to no penalized by SEV-SNP is 
     \label{fig:tb-redis-latency}
 \end{figure}
 
-\begin{table*}
-    \centering
-    \begin{tabular}{l|r|r}
-        \textbf{benchmark}                        & \textbf{SEV-SNP} & \textbf{NOSEV} \\
-        \hline
-        Godot Game Engine compilation (LIB)       &  410 sec         & 395 sec        \\
-        ImageMagick compilation (gcc) (LIB)       &  70 sec          & 69 sec         \\
-        Linux compilation (defconfig) (LIB)       &  329 sec         & 322 sec        \\
-        LLVM Project compilation (ninja) (LIB)    &  774 sec         & 733 sec        \\
-        Sqlite 2500 insertions (LIB)              &  4.106 sec       & 4.31 sec       \\
-        ssvb/tinymembench MEMCPY (HIB)            &  22727.0 MB/s    & 23628.2 MB/s   \\
-        ssvb/tinymembench MEMSET (HIB)            &  33170.8 MB/s    & 36367.7 MB/s   \\
-        redis-benchmark SET RPS (HIB)             &  91911.76        & 110864.74      \\
-        redis-benchmark SET average latency (LIB) &  0.283 msec      & 0.234 msec     \\
-        redis-benchmark GET RPS (HIB)             &  94339.62        & 110987.79      \\
-        redis-benchmark GET average latency (LIB) &  0.275 msec	     & 0.233 msec     \\
-    \end{tabular}
-    \caption{Comparing benchmark results run on two QEMU vms (16 vCPUs, 16GB ram, virtio-scsi storage). HIB and LIB mean respectively "Higher is Better" and "Lower is Better", RPS stands for "Requests Per Second"} 
-    \label{tab:tinyben-results}
-\end{table*}
-
-We ran some additional benchmarks regarding the different storage virtualization techniques, more specifically we tested \textbf{virtio-scsi}, \textbf{virtio-blk} and \textbf{nvme} technologies. Virtio is the main platform for IO virtualization in KVM, essentially it provides a common framework for hypervisors to do IO virtualization.
+We ran some additional benchmarks regarding the different storage virtualization techniques, more specifically we tested \textit{virtio-scsi}, \textit{virtio-blk} and \textit{nvme} technologies. Virtio is the main platform for IO virtualization in KVM, essentially it provides a common framework for hypervisors to do IO virtualization.
 
 \begin{description}
     \item[nvme] is the user-space NVMe driver that enables virtual machines to interact with NVMe devices
@@ -345,27 +319,28 @@ We perform some measurements using the FIO \cite{fio} benchmarking tool, we use 
         \hline
         \textbf{mode}& \textbf{storage} & \textbf{nosev} & \textbf{sev} & \textbf{ratio} \\
         \hline
-        randread & blk & 36732.676746 & 44428.919037 & 1.209520 \\
-        randread & nvme & 43056.001194 & 43182.237293 & 1.002932 \\
-        randread & scsi & 37267.866497 & 44158.765942 & 1.184902 \\
-        randwrite & blk & 39318.967918 & 42268.305611 & 1.075011 \\
-        randwrite & nvme & 40921.898750 & 48371.563309 & 1.182046 \\
-        randwrite & scsi & 40428.971912 & 47231.466854 & 1.168258 \\
-        read & blk & 34110.888638 & 40344.405910 & 1.182743 \\
-        read & nvme & 39693.322182 & 37262.537930 & 0.938761 \\
-        read & scsi & 35575.824402 & 40626.232517 & 1.141962 \\
-        write & blk & 37879.406013 & 41905.050934 & 1.106275 \\
-        write & nvme & 51967.809612 & 46775.977871 & 0.900095 \\
-        write & scsi & 40000.623734 & 45465.357731 & 1.136616 \\
+        randread     & blk              & 36732.676746   & 44428.919037 & 1.209520       \\
+        randread     & nvme             & 43056.001194   & 43182.237293 & 1.002932       \\
+        randread     & scsi             & 37267.866497   & 44158.765942 & 1.184902       \\
+        randwrite    & blk              & 39318.967918   & 42268.305611 & 1.075011       \\
+        randwrite    & nvme             & 40921.898750   & 48371.563309 & 1.182046       \\
+        randwrite    & scsi             & 40428.971912   & 47231.466854 & 1.168258       \\
+        read         & blk              & 34110.888638   & 40344.405910 & 1.182743       \\
+        read         & nvme             & 39693.322182   & 37262.537930 & 0.938761       \\
+        read         & scsi             & 35575.824402   & 40626.232517 & 1.141962       \\
+        write        & blk              & 37879.406013   & 41905.050934 & 1.106275       \\
+        write        & nvme             & 51967.809612   & 46775.977871 & 0.900095       \\
+        write        & scsi             & 40000.623734   & 45465.357731 & 1.136616       \\
         \hline
     \end{tabular}
     \caption{FIO average latency benchmarks, measured in nanoseconds, ratio is the ratio between \textbf{sev} and \textbf{nosev}}
     \label{tab:al}
 \end{table}
 
-The FIO benchmarks highlight some interesting patterns: average latency is barely impacted, while bandwidth is severely impacted, especially in read workloads, this might be related to the usage of the aforementioned \textbf{Reverse Map Table}.
+The FIO benchmarks highlight some interesting patterns: average latency is barely impacted, while bandwidth is severely impacted, especially in read workloads, this might be related to the usage of the aforementioned \textbf{Reverse Map Table}. The number of Input/Output Operations per second
 
 \section{Final Remarks and Conclusion}
+Overall, from a first evaluation, it seems SEV/SEV-ES/SEV-SNP tecnhlogies do not introduce a noticeable degradation in performance. The only exception is read bandwidth across all different storage virtualization tecnhniques, further evaluation may be needed to better pinpoint what causes this decrease in performace.
 All the code to run virtual machines and benchmarks is public, MIT licensed, except where noted, and available at \href{https://github.com/rcastellotti/gr}{https://github.com/rcastellotti/gr}
 
 \section{Future Work}
@@ -376,6 +351,7 @@ Further performance evaluation for SEV/SEV-ES/SEV-SNP confidential virtual machi
     \item analyzing IO performance when using SEV Trusted Input Output \cite{tio}
     \item analyzing whether having multiple SEV machines on the same physical host incurs in a large overhead
     \item analyze performance overhead caused by \texttt{VMRUN} and \texttt{VMEXIT} when SEV-ES is enabled.
+    \item investigate unikernels supporting SEV like \href{https://github.com/microsoft/monza}{microsoft/monza}
     \item exploring Confidential Containers \cite{coco} project to identify potential bottlenecks
     \item understand AMD Secure VM Service Module \cite{svsm}, a module to offload sensitive operations onto a privileged guest and see if this leads to a performance improvement
 \end{itemize}
