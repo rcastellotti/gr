@@ -40,8 +40,8 @@ Cloud providers' customers want to be sure no one can access their disks, memory
 \textit{AMD Secure Memory Encryption (SME)} is the basic building block for the more sophisticated technologies we'll cover later, so it is imperative we understand how it works. In a machine with \textit{SME} enabled memory operations are performed via dedicated hardware, in fact, on an entirely different chip on the same die as the CPU. AMD EPYC™ processors introduced two hardware security components:
 
 \begin{itemize}
-    \item a \textit{AES-128 hardware encryption engine} embedded in the memory controller, a chip whose job is to make sure data transferred to and from the main memory is encrypted during write operations and decrypted during read operations. See Figure \ref{fig:memory-encryption-fig} to better understand how data is managed when \textit{SME} is used. This memory controller is inside the EPYC SOC, so that memory lines leaving the SOC are always encrypted
-    \item the \textit{AMD Secure Processor}, a small processor providing cryptographic functionality to perform secure key generation and key management
+    \item a \textit{AES-128 hardware encryption engine} embedded in the memory controller, a chip whose job is to make sure data transferred to and from the main memory is encrypted during write operations and decrypted during read operations. See Figure \ref{fig:memory-encryption-fig} to better understand how data is managed when \textit{SME} is used. This memory controller is inside the EPYC SOC, so that memory lines leaving the SOC are always encrypted;
+    \item the \textit{AMD Secure Processor}, a small processor providing cryptographic functionality to perform secure key generation and key management.
 \end{itemize}
 
 \begin{figure}
@@ -116,10 +116,10 @@ After the introduction of \textit{AMD-SEV} and \textit{AMD-ES} AMD introduced a 
 Let's now explain what these attacks are before we cover how \textit{SEV-SNP} mitigates them.
 
 \begin{itemize}
-    \item a \textit{replay attack} happens when a malicious actor captures the state at a certain moment and modifies memory successfully with those values
-    \item \textit{data corruption} attacks happen when the attacker, knowing they are not able to read memory, decides to corrupt the memory to trick the machine into unpredicted and possibly dangerous behavior
-    \item a \textit{memory aliasing} attack happens when an external actor may map a memory page to multiple physical pages he controls
-    \item a \textit{memory remapping} attacks happens whenever the intruder maps a page to a different physical page
+    \item a \textit{replay attack} happens when a malicious actor captures the state at a certain moment and modifies memory successfully with those values;
+    \item \textit{data corruption} attacks happen when the attacker, knowing they are not able to read memory, decides to corrupt the memory to trick the machine into unpredicted and possibly dangerous behavior;
+    \item a \textit{memory aliasing} attack happens when an external actor may map a memory page to multiple physical pages he controls;
+    \item a \textit{memory remapping} attacks happens whenever the intruder maps a page to a different physical page.
 \end{itemize}
 
 These attacks are a problem because a running program has no notion of memory integrity and it could end up in a state that was not originally considered by the developers and this may lead to security issues.
@@ -129,7 +129,7 @@ The basic principle of \textit{SEV-SNP} integrity is that if a VM is able to rea
 \subsubsection{Threat Model}
 In this computing model we consider:
 \begin{itemize}
-    \item \textit{AMD System-On-Chip (SOC) hardware}, \textit{AMD Secure Processor (AMD-SP)} and the \textbf{VM} as fully trusted, to this extent the VM should enable Full Disk Encryption (FDE) at rest, such as LUKS, major cloud providers have been supporting FDE for long time.
+    \item \textit{AMD System-On-Chip (SOC) hardware}, \textit{AMD Secure Processor (AMD-SP)} and the \textbf{VM} as fully trusted, to this extent the VM should enable Full Disk Encryption (FDE) at rest, such as LUKS, major cloud providers have been supporting FDE for long time;
     \item \textbf{BIOS} on the host system, the \textbf{hypervisor}, \textbf{device drivers} and \textbf{other VMs} as untrusted, this means the threat model assumes they are malicious and they may conspire to compromise the security of our Confidential Virtual Machine.
 \end{itemize}
 
@@ -146,10 +146,10 @@ Having introduced the main building blocks of AMD's effort to popularize \textit
 \section{Environment}
 \label{sec:environment}
     
-We are running our experiments in QEMU/KVM virtual machines, with 16GB of RAM and 16 vCPUs each, the table \ref{tab:experiment-environment} contains more details about our hardware and software versions. The code to setup the environment and launch VMs can be found at \href{https://github.com/rcastellotti/gr}{https://github.com/rcastellotti/gr}.
+We are running our experiments in QEMU/KVM virtual machines, with 16GB of RAM and 16 vCPUs each, Table \ref{tab:experiment-environment} contains more details about our hardware and software versions. The code to setup the environment and launch VMs can be found at \href{https://github.com/rcastellotti/gr}{https://github.com/rcastellotti/gr}.
 
 \begin{description}
-    \item[QEMU] is a generic open source machine emulator and virtualizer \cite{qemu}, we use QEMU together with KVM, the Kernel Virtual Machine to virtualize our machines.
+    \item[QEMU] is a generic open source machine emulator and virtualizer \cite{qemu}, we use QEMU together with KVM, the Kernel Virtual Machine to virtualize our machines;
     \item[OVMF] is a project \cite{ovmf} aiming to enable UEFI support for virtual machines, based on EDK 2. We will use OVMF to generate the executable firmware and the non-volatile variable store. It is imperative to create a vm-specific copy of \texttt{OVMF\_vars.fd} because the variable store should be private for every virtual machine. UEFI support is mandatory to run a SEV-SNP machine.
 \end{description}
 
@@ -173,12 +173,12 @@ We are running our experiments in QEMU/KVM virtual machines, with 16GB of RAM an
 \end{table*}
 
 \section{Benchmarks}
-We expect the aforementioned encryption techniques used in SEV/SEV-ES/SEV-SNP to cause a degradation in performance, especially for memory-intensive workloads. Additionally we want to investigate whether this technology slows down CPU intensive workloads and disk operations. To quantify the performance impact we have to trade off in order to have a more secure virtual environment we are running three distinct kinds of benchmarks: Compilation, Memory Benchmarks and I/O benchmarks. We are using \texttt{rcastellotti/tinyben} \cite{tinyben}, an experimental benchmarking tool aimed to replace the popular Phoronix Test Suite \cite{pts} benchmarking suite to run three main categories of benchmarks:
+We expect the aforementioned encryption techniques used in SEV/SEV-ES/SEV-SNP to cause a degradation in performance, especially for memory-intensive workloads. Additionally we want to investigate whether this technology slows down CPU intensive workloads and disk operations. To quantify the performance impact we have to trade off in order to have a more secure virtual environment we are using \texttt{rcastellotti/tinyben} \cite{tinyben}, an experimental benchmarking tool aimed at replacing the popular Phoronix Test Suite \cite{pts} benchmarking suite to run three distinct kinds of benchmarks: Compilation, Memory Benchmarks and I/O benchmarks
 
 \begin{description}
-    \item[Compilation Benchmarks] We are using compilation as an all-around benchmark because it is a "real world" benchmark. We are compiling some popular open-source projects like \href{https://github.com/godotengine/godot}{Godot Game Engine}, \href{https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git}{Linux} (defconfig), the entire \href{https://github.com/llvm/llvm-project}{LLVM Project} (using ninja) and measuring how long does it take to complete the compilation process. From Figure \ref{fig:tb-compilation} we can see there is a barely measurable slowdown in completion times, ,  on average a slowdown of a factor of 0.96.
+    \item[Compilation Benchmarks] We are using compilation as an all-around benchmark because it is a "real world" benchmark. We are compiling some popular open-source projects like \href{https://github.com/godotengine/godot}{Godot Game Engine}, \href{https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git}{Linux} (defconfig), the entire \href{https://github.com/llvm/llvm-project}{LLVM Project} (using ninja) and measuring how long does it take to complete the compilation process. From Figure \ref{fig:tb-compilation} we can see there is a barely measurable slowdown in completion times, on average a slowdown of a factor of 0.96.
     \item[Memory Benchmarks] To benchmark memory we are using \texttt{ssvb/tinymembench} \cite{tinymembench}, a tool to measure memory throughput and latency. We are mainly interested in bandwidth for the \texttt{MEMCPY} and \texttt{MEMSET} operations. In Figure \ref{fig:tb-tinymembench} we can see bandwidth for \texttt{MEMSET} is barely impacted, while the slowdown in \texttt{MEMSET} is a little more evident, in a factor of approximately 0.92 on average. We suspect it might be related to lookups in the \textit{Reverse Map Table}, but we are not excluding the bottleneck might be related to something entirely different.
-    \item[I/O Benchmarks] To measure I/O performance we are running two different benchmarks, first we are performing 2500 SQLite insertions in a table, then we are running \texttt{redis-benchmark}, a tool included in \href{https://redis.io/}{Redis}. We are interested in Requests per Second and latency for the main operations (namely SET and GET). In Figures \ref{fig:tb-misc},\ref{fig:tb-redis} and \ref{fig:tb-redis-latency} we see the results. Redis benchmarks highlight a certain performance degradation, in terms of requests per second this approximately translates in a slowdown of factor 0.89 for GET operations and 0,91 for GET operations, this is reflected in the minimum latency visualization. 
+    \item[I/O Benchmarks] To measure I/O performance we are running two different benchmarks, first we are performing 2500 SQLite insertions in a table, then we are running \texttt{redis-benchmark}, a tool included in \href{https://redis.io/}{Redis}. We are interested in Requests per Second and latency for the main operations (namely SET and GET). In Figures \ref{fig:tb-misc},\ref{fig:tb-redis} and \ref{fig:tb-redis-latency} we see the results. Redis benchmarks highlight a certain performance degradation, in terms of requests per second this approximately translates in a slowdown of factor 0.89 for GET operations and 0.91 for GET operations, this is reflected in the minimum latency visualization. 
 \end{description}
 
 As we can see the overhead introduced by the usage of \textit{Confidential Computing} technology across the three categories of benchmarks is generally mild, as discussed before, in almost every benchmark, with the exception for LZ4-compression, where we can see a slowdown in factor or 0.8 approximately. Further investigation tweaking the amount of resources available to each machine is necessary to correctly esteem the exact performance degradation values.
@@ -223,9 +223,9 @@ One reason why CPU-intensive workloads are little to no penalized by SEV-SNP is 
 To investigate storage related operations we ran some additional benchmarks with different storage virtualization techniques, more specifically we tested \textit{virtio-scsi}, \textit{virtio-blk} and \textit{nvme} technologies. Virtio is the main platform for IO virtualization in KVM, providing a common framework for hypervisors to do IO virtualization.
 
 \begin{description}
-    \item[nvme] is the user-space NVMe driver that enables virtual machines to interact with NVMe devices.
-    \item[virtio-blk] devices are very simple block devices, the front-end driver reads and writes by appending commands to the virtualization queue so that the back-end driver can process them on the host.
-    \item[virtio-scsi] aims to overcome some limitations introduced by \textit{virtio-blk}, support more devices per guest (one PCI device per disk is not a limiting factor anymore) and supports technologies like multiqueueing while keeping the performance of \textit{virtio-blk}, additionally \textit{virtio-scsi} provides a pass-through technology to present physical storage devices directly to guests.\cite{scsi}
+    \item[nvme] is the user-space NVMe driver that enables virtual machines to interact with NVMe devices;
+    \item[virtio-blk] devices are very simple block devices, the front-end driver reads and writes by appending commands to the virtualization queue so that the back-end driver can process them on the host;
+    \item[virtio-scsi] aims to overcome some limitations introduced by \textit{virtio-blk}, supports more devices per guest (one PCI device per disk is not a limiting factor anymore) and technologies like multiqueueing while keeping the performance of \textit{virtio-blk}, additionally \textit{virtio-scsi} provides a pass-through technology to present physical storage devices directly to guests.\cite{scsi}
 \end{description}
 
 We perform some measurements using the FIO \cite{fio} benchmarking tool with a setup similar to the one used in \cite{spool} to evaluate: bandwidth, average latency and IOPS. We set the \texttt{--direct=1} flag to use unbuffered I/O. Results are reported in \ref{fig:fio-bw}, \ref{fig:fio-al}, \ref{fig:fio-iops}. We also report the values in tables to better analyze the relative performance variations.
@@ -348,13 +348,13 @@ All the code to run virtual machines and benchmarks is available at \href{https:
 Further performance evaluation for SEV/SEV-ES/SEV-SNP confidential virtual machines will include:
 
 \begin{itemize}
-    \item repeating micro-benchmarks and FIO benchmarks tweaking machines configuration (vCPUs, RAM, storage virtualization)
-    \item analyzing IO performance when using SEV Trusted Input Output \cite{tio}
-    \item analyzing whether having multiple SEV machines on the same physical host incurs in a large overhead
-    \item analyze performance overhead caused by \texttt{VMRUN} and \texttt{VMEXIT} when SEV-ES is enabled.
-    \item investigate unikernels supporting SEV like \href{https://github.com/microsoft/monza}{microsoft/monza}
-    \item exploring Confidential Containers \cite{coco} project to identify potential bottlenecks
-    \item understand AMD Secure VM Service Module \cite{svsm}, a module to offload sensitive operations onto a privileged guest and see if this leads to a performance improvement
+    \item repeating micro-benchmarks and FIO benchmarks tweaking machines configuration (vCPUs, RAM, storage virtualization);
+    \item analyzing IO performance when using SEV Trusted Input Output \cite{tio};
+    \item analyzing whether having multiple SEV machines on the same physical host incurs in a large overhead;
+    \item analyzing performance overhead caused by \texttt{VMRUN} and \texttt{VMEXIT} when SEV-ES is enabled;
+    \item investigate unikernels supporting SEV like \href{https://github.com/microsoft/monza}{microsoft/monza};
+    \item exploring Confidential Containers \cite{coco} project to identify potential bottlenecks;
+    \item understanding AMD Secure VM Service Module \cite{svsm}, a module to offload sensitive operations onto a privileged guest to see if it leads to a performance improvement.
 \end{itemize}
 
     
@@ -401,6 +401,6 @@ h:~$ grep -rnw mem-dump.<NOSEV_PID> -e "hi from NOSEV!"
 grep: mem-dump.<NOSEV_PID>: binary file matches
 \end{minted}
 
-From the host machine we are able to see nosev's machine memory while this is not possible with SEV enabled.
+From the host machine we are able to see NOSEV's machine memory while this is not possible with SEV enabled.
 
 \end{document}      
